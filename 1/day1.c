@@ -2,34 +2,39 @@
 #include <limits.h>
 
 int main(int argc, char** argv) {
-    int a = INT_MAX;
-    int b = INT_MAX;
-    int c = INT_MAX;
-    int d = INT_MAX;
-    int bigger = 0;
-    FILE* fptr;
+    int v1 = INT_MAX;
+    int v2 = INT_MAX;
+    int v3 = INT_MAX;
+    int v4;
+    int part1 = 0;
+    int part2 = 0;
     
     if (argc < 2) {
         puts("need filepath");
         return 1;
     }
-    fptr = fopen(argv[1], "r");
+    
+    FILE* fptr = fopen(argv[1], "r");
     if (fptr == NULL) {
         puts("invalid filename");
         return 1;
     }
     
-    while(fscanf(fptr, "%d\n", &d) != EOF) {
-        if(d > a) {
-            bigger++;
+    while(fscanf(fptr, "%d\n", &v4) != EOF) {
+        if (v3 < v4) {
+            part1++;
         }
-        a = b;
-        b = c;
-        c = d;
+        if (v1 < v4) {
+            part2++;
+        }
+        v1 = v2;
+        v2 = v3;
+        v3 = v4;
     }
     
     fclose(fptr);
     
-    printf("%d bigger\n", bigger);
+    printf("Part 1: %d\n", part1);
+    printf("Part 2: %d\n", part2);
     return 0;
 }
