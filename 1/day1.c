@@ -2,31 +2,17 @@
 #include <limits.h>
 
 int main(int argc, char** argv) {
-    int v1 = INT_MAX;
-    int v2 = INT_MAX;
-    int v3 = INT_MAX;
-    int v4;
-    int part1 = 0;
-    int part2 = 0;
+    int v1 = INT_MAX, v2 = INT_MAX, v3 = INT_MAX, v4;
+    int part1 = 0, part2 = 0;
     
-    if (argc < 2) {
-        puts("need filepath");
-        return 1;
-    }
+    if (argc < 2) return 1;
     
     FILE* fptr = fopen(argv[1], "r");
-    if (fptr == NULL) {
-        puts("invalid filename");
-        return 1;
-    }
+    if (fptr == NULL) return 2;
     
     while(fscanf(fptr, "%d\n", &v4) != EOF) {
-        if (v3 < v4) {
-            part1++;
-        }
-        if (v1 < v4) {
-            part2++;
-        }
+        if (v3 < v4) part1++;
+        if (v1 < v4) part2++;
         v1 = v2;
         v2 = v3;
         v3 = v4;
