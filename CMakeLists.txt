@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 17)
 
 project(advent_of_code LANGUAGES C)
 
-add_compile_options(-Wall -Wextra -Werror)
+add_compile_options(-Wall -Werror -Wpedantic)
 
 add_executable(day1 1/day1.c)
-
+add_executable(day2 2/day2.c)
