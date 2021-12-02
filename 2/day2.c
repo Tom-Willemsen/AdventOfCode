@@ -3,7 +3,7 @@
 #include <string.h>
 
 int main(int argc, char** argv){
-    int64_t p1depth = 0, p2depth = 0, horiz = 0, aim = 0, dist;
+    int64_t p1depth = 0, p2depth = 0, horiz = 0, dist;
     char dir[10];
     
     if (argc < 2) return 1;
@@ -14,13 +14,11 @@ int main(int argc, char** argv){
     while(fscanf(fptr, "%9s %" SCNd64, dir, &dist) != EOF) {
         if (strncmp(dir, "forward", 10) == 0) {
             horiz += dist;
-            p2depth += aim * dist;
+            p2depth += p1depth * dist;
         } else if (strncmp(dir, "up", 10) == 0) {
             p1depth -= dist;
-            aim -= dist;
         } else if (strncmp(dir, "down", 10) == 0) {
             p1depth += dist;
-            aim += dist;
         }
     }
     
