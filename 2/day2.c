@@ -1,15 +1,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
+#include "aoc_util.h"
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
+    FILE* fptr = open_arg_as_file_or_exit(argc, argv);
     int64_t p1depth = 0, p2depth = 0, horiz = 0, dist;
     char dir[10];
-    
-    if (argc < 2) return 1;
-    
-    FILE* fptr = fopen(argv[1], "r");
-    if (fptr == NULL) return 2;
     
     while(fscanf(fptr, "%9s %" SCNd64, dir, &dist) != EOF) {
         if (strncmp(dir, "forward", 10) == 0) {
@@ -26,4 +23,5 @@ int main(int argc, char** argv){
     
     printf("Part 1: %" PRId64 "\n", p1depth * horiz);
     printf("Part 2: %" PRId64 "\n", p2depth * horiz);
+    return EXIT_SUCCESS;
 } 
