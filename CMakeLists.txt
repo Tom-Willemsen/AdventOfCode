@@ -1,16 +1,32 @@
 cmake_minimum_required(VERSION 3.21)
 project(advent_of_code LANGUAGES C)
 
+find_library(NAMES cmocka REQUIRED)
+
 set(CMAKE_C_STANDARD 17)
 
-if (MSVC)
-    add_compile_options(/W4)
-else()
-    add_compile_options(-Wall -Werror -Wpedantic)
-endif()
+add_compile_options(
+    -Wall 
+    -Werror 
+    -Wpedantic
+    -Wno-unused-function
+)
 
-include_directories("include")
+include_directories("common")
 
-add_executable(day1 1/day1.c)
-add_executable(day2 2/day2.c)
-add_executable(day3 3/day3.c)
+function(add_unit_test name source link)
+    add_executable(${name} ${source})
+    target_include_directories(${name} PUBLIC 3)
+    target_link_libraries(${name} cmocka ${link})
+    add_custom_command(
+        TARGET ${name} 
+        POST_BUILD 
+        COMMAND ${name}
+        COMMENT "Tests for ${link} from ${source}"
+    )
+    add_custom_target(${name}.RUN_TESTS ${name} ALL)
+endfunction(add_unit_test)
+
+add_subdirectory(1/)
+add_subdirectory(2/)
+add_subdirectory(3/)

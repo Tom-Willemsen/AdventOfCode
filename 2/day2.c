@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
-#include "aoc_util.h"
+#include "file_loading.h"
 
 int main(int argc, char** argv) {
     FILE* fptr = open_arg_as_file_or_exit(argc, argv);

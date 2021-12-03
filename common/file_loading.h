@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static FILE* open_arg_as_file_or_exit(int argc, char** argv) {
+FILE* open_arg_as_file_or_exit(int argc, char** argv) {
     if (argc == 0) {
         fprintf(stderr, "Usage: program <input filepath>\n");
         exit(EXIT_FAILURE);
