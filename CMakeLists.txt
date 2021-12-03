@@ -13,3 +13,4 @@ include_directories("include")
 
 add_executable(day1 1/day1.c)
 add_executable(day2 2/day2.c)
+add_executable(day3 3/day3.c)
