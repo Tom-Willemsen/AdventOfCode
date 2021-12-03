@@ -6,7 +6,7 @@
 uint64_t part1(char** data, uint64_t data_size) {
     int64_t ones;
     uint64_t gamma = 0, epsilon = 0;
-    for(uint64_t pos=0; pos<strlen(data[0]); ++pos) {
+    for(uint64_t pos=0; pos<strlen(data[0]) - 1; ++pos) {
         ones = 0;
         for(uint64_t row=0; row<data_size; ++row) {
             if (data[row][pos] == '1') {
@@ -49,7 +49,7 @@ uint64_t part2(char** data, uint64_t data_size, uint64_t is_co2) {
     uint64_t ones, zeros, result, pos;
     char* selector = calloc(strlen(data[0]) + 1, sizeof(char));
     
-    for (pos=0; pos<strlen(data[0]); ++pos) {
+    for (pos=0; pos<strlen(data[0]) - 1; ++pos) {
         zeros = count_char_matching_selector(data, data_size, selector, pos, '0');
         ones = count_char_matching_selector(data, data_size, selector, pos, '1');
         
@@ -63,8 +63,13 @@ uint64_t part2(char** data, uint64_t data_size, uint64_t is_co2) {
             selector[pos] = (ones < zeros) ? '0' : '1';
         }
     }
-    
-    result = strtol(first_matching_selector(data, data_size, selector, pos), NULL, 2);
+    char* result_s = first_matching_selector(data, data_size, selector, pos);
+    if (result_s == NULL) {
+        printf("bad result\n");
+        result = 0;
+    } else {
+        result = strtol(result_s, NULL, 2);
+    }
     free(selector);
     return result;
 }

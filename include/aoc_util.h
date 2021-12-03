@@ -24,35 +24,39 @@ static FILE* open_arg_as_file_or_exit(int argc, char** argv) {
 
 
 char** load_file_as_str_arr(FILE* fptr, uint64_t *size) {
-    uint64_t line = 0, lines = 0, linelength = 0, maxlinelength = 0;
+    uint64_t l, lines = 1, linelength = 0, maxlinelength = 0;
     int c;
-    char *buffer, **data = NULL;
+    char **data = NULL, *buffer;
     
     while ((c = fgetc(fptr)) != EOF)
     {
+        linelength++;
         if (c == '\n') {
             lines++;
-            if ((linelength + 1) > maxlinelength) {
-                maxlinelength = linelength + 1;  
+            if (linelength > maxlinelength) {
+                maxlinelength = linelength;
             }
-        } else {
-            linelength++;
+            linelength = 0;
         }
     }
-    *size = lines;
-    if ((linelength + 1) > maxlinelength) {
-        maxlinelength = linelength + 1;  
+    
+    if (linelength > maxlinelength) {
+        maxlinelength = linelength;  
     }
     
     data = calloc(lines, sizeof(char*));
     buffer = calloc(maxlinelength + 1, sizeof(char));
     rewind(fptr);
     
-    while(fscanf(fptr, "%s", buffer) != EOF) {
-        data[line] = calloc(maxlinelength + 1, sizeof(char));
-        strncpy(data[line], buffer, maxlinelength + 1);
-        line++;
+    for(l=0; l<lines; ++l){
+        if (getline(&buffer, &maxlinelength, fptr) == -1) {
+            break;
+        }
+        data[l] = calloc(maxlinelength, sizeof(char*));
+        strncpy(data[l], buffer, maxlinelength);
     }
+    
+    *size = l;
     free(buffer);
     return data;
 }
