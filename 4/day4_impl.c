@@ -1,20 +1,38 @@
 #include "day4_impl.h"
 
-int64_t** load_board(char** data, int64_t board_number) {
-    int64_t start_line = 2 + (BOARD_SIZE + 1) * board_number;
+int64_t*** load_boards(char** data, int64_t data_size, int64_t* n_boards) {
+    int64_t start_line;
     int64_t row_length;
-    int64_t** board_arr = calloc(BOARD_SIZE, sizeof(int64_t*));
+    int64_t** board_arr;
     
-    for (int64_t i = 0; i<BOARD_SIZE; ++i) {
-        board_arr[i] = str_to_int64_arr(data[start_line + i], ' ', &row_length);
-        if (row_length != BOARD_SIZE) {
-            puts("bad row length");
+    *n_boards = (data_size - 1) / (BOARD_SIZE + 1);
+    int64_t*** boards = calloc(*n_boards, sizeof(int64_t **));
+    
+    for (int64_t board=0; board<*n_boards; ++board) {
+        board_arr = calloc(BOARD_SIZE, sizeof(int64_t*));
+        start_line = 2 + (BOARD_SIZE + 1) * board;
+        
+        for (int64_t row = 0; row<BOARD_SIZE; ++row) {
+            board_arr[row] = str_to_int64_arr(data[start_line + row], ' ', &row_length);
+            if (row_length != BOARD_SIZE) {
+                puts("bad row length");
+            }
         }
+        boards[board] = board_arr;
     }
     
-    return board_arr;
+    return boards;
 }
 
+void free_boards(int64_t*** boards, int64_t n_boards) {
+    for (int64_t i=0; i<n_boards; ++i) {
+        for (int64_t row=0; row<BOARD_SIZE; ++row) {
+            free(boards[i][row]);
+        }
+        free(boards[i]);
+    }
+    free(boards);
+}
 
 int64_t sum_unmarked(int64_t** board_arr, int64_t* numbers, int64_t n_numbers) {
     int64_t result = 0, is_marked = 0;
@@ -34,7 +52,6 @@ int64_t sum_unmarked(int64_t** board_arr, int64_t* numbers, int64_t n_numbers) {
     }
     return result;
 }
-
 
 int64_t board_wins_after_n_numbers(int64_t** board_arr, int64_t* numbers, int64_t n_numbers) {
     int64_t winning = 0, contains_bn = 0;

@@ -10,32 +10,18 @@ int main(int argc, char** argv) {
     
     fclose(fptr);
     
-    int64_t n_numbers = 0;
+    int64_t n_numbers = 0, n_boards = 0;
     int64_t* numbers = str_to_int64_arr(data[0], ',', &n_numbers);
     
-    int64_t n_boards = (data_size - 1) / (BOARD_SIZE + 1);
-    int64_t*** boards = calloc(n_boards, sizeof(int64_t **));
+    int64_t*** boards = load_boards(data, data_size, &n_boards);
     
-    for (int64_t i=0; i<n_boards; ++i) {
-        boards[i] = load_board(data, i);
-    }
-    
-    for (int64_t i=0; i<data_size; ++i) {
-        free(data[i]);
-    }
-    free(data);
+    free_str_arr(data, data_size);
     
     printf("Part 1: %"PRId64"\n", part1(boards, n_boards, numbers, n_numbers));
     printf("Part 2: %"PRId64"\n", part2(boards, n_boards, numbers, n_numbers));
     
+    free_boards(boards, n_boards);
     free(numbers);
-    for (int64_t i=0; i<n_boards; ++i) {
-        for (int64_t row=0; row<BOARD_SIZE; ++row) {
-            free(boards[i][row]);
-        }
-        free(boards[i]);
-    }
-    free(boards);
     
     return EXIT_SUCCESS;
 }
