@@ -84,7 +84,6 @@ ll_i64_node* ll_i64_node_at(ll_i64* ll, uint64_t index) {
 }
 
 void ll_i64_remove(ll_i64* ll, uint64_t index) {
-    assert(ll->size > 0);
     assert(ll->size > index);
     
     ll_i64_node* node = ll_i64_node_at(ll, index);
@@ -134,33 +133,24 @@ int64_t ll_i64_pop_front(ll_i64* ll) {
 }
 
 int64_t ll_i64_contains(ll_i64* ll, int64_t n) {
-    int64_t index = 0;
-    ll_i64_node* node = ll->start;
-    if (ll->size > 0) {
-        if (node->data == n) return 1;
-        while ((node = node->next) != NULL) {
-            index++;
-            assert(index < ll->size);
-            if (node->data == n) {
-                return 1;
-            }
-        };
+    ll_i64_node* it = ll->start;
+    int64_t value;
+    while (ll_i64_next(&it, &value)) {
+        if (value == n) {
+            return 1;
+        }
     }
     return 0;
 }
 
 int64_t ll_i64_indexof(ll_i64* ll, int64_t n) {
-    int64_t index = 0;
-    ll_i64_node* node = ll->start;
-    if (ll->size > 0) {
-        if (node->data == n) return 0;
-        while ((node = node->next) != NULL) {
-            index++;
-            assert(index < ll->size);
-            if (node->data == n) {
-                return index;
-            }
+    int64_t index = 0, value;
+    ll_i64_node* it = ll->start;
+    while (ll_i64_next(&it, &value)) {
+        if (value == n) {
+            return index;
         }
+        index++;
     }
     return -1;
 }
@@ -172,22 +162,18 @@ int64_t* ll_i64_as_array(ll_i64* ll, uint64_t* array_size) {
     }
     int64_t* arr = calloc(ll->size, sizeof(int64_t));
     assert(arr != NULL);
-    ll_i64_node* node = ll->start;
     
-    arr[0] = node->data;
-    uint64_t arr_index = 0;
-    while (node->next != NULL) {
+    ll_i64_node* it = ll->start;
+    int64_t value, arr_index = 0;
+    while (ll_i64_next(&it, &value)) {
+        arr[arr_index] =value;
         arr_index++;
-        node = node->next;
-        assert(arr_index < ll->size);
-        arr[arr_index] = node->data;
     }
-    assert(node->next == NULL);
     return arr;
 }
 
 ll_i64* ll_i64_merge(ll_i64* ll1, ll_i64* ll2) {
-    // merge lists in-place
+    // merge lists in-place, may return either list, other list is freed
     if (ll1->size == 0) {
         free(ll1);
         return ll2;
@@ -203,10 +189,6 @@ ll_i64* ll_i64_merge(ll_i64* ll1, ll_i64* ll2) {
     ll1->size += ll2->size;
     free(ll2);
     return ll1;
-}
-
-ll_i64_node* ll_i64_it(ll_i64* ll) {
-    return ll->start;
 }
 
 int64_t ll_i64_next(ll_i64_node** node, int64_t* value) {

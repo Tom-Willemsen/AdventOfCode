@@ -70,6 +70,7 @@ void test_peek_back_and_front (void ** state) {
 void test_contains (void ** state) {
     ll_i64* ll = ll_i64_init();
     
+    assert_int_equal(ll_i64_contains(ll, 1), 0);
     ll_i64_push_back(ll, 1);
     ll_i64_push_back(ll, 2);
     assert_int_equal(ll_i64_contains(ll, 0), 0);
@@ -83,6 +84,7 @@ void test_contains (void ** state) {
 void test_indexof (void ** state) {
     ll_i64* ll = ll_i64_init();
     
+    assert_int_equal(ll_i64_indexof(ll, 1), -1);
     ll_i64_push_back(ll, 1);
     ll_i64_push_back(ll, 2);
     assert_int_equal(ll_i64_indexof(ll, 0), -1);
@@ -147,14 +149,25 @@ void test_iterator (void ** state) {
     ll_i64_push_back(ll, 0);
     ll_i64_push_back(ll, 20);
     ll_i64_push_back(ll, 40);
-    ll_i64_push_back(ll, 60);
-    ll_i64_push_back(ll, 80);
 
-    ll_i64_node* it = ll_i64_it(ll);
+    ll_i64_node* it = ll->start;
     while (ll_i64_next(&it, &value)) {
         assert_int_equal(value, pos * 20);
         pos++;
     }
+    assert_int_equal(pos, 3);
+    
+    ll_i64_pop_front(ll);
+    ll_i64_pop_front(ll);
+    ll_i64_pop_front(ll);
+    assert_int_equal(ll->size, 0);
+    
+    it = ll->start;
+    while (ll_i64_next(&it, &value)) {
+        assert_true(0);
+    }
+    
+    ll_i64_free(ll);
 }
 
 int main (void)

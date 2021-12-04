@@ -32,5 +32,4 @@ int64_t ll_i64_contains(ll_i64* ll, int64_t n);
 int64_t ll_i64_indexof(ll_i64* ll, int64_t n);
 int64_t* ll_i64_as_array(ll_i64* ll, uint64_t* array_size);
 ll_i64* ll_i64_merge(ll_i64* ll1, ll_i64* ll2);
-ll_i64_node* ll_i64_it(ll_i64* ll);
 int64_t ll_i64_next(ll_i64_node** ll, int64_t* value);

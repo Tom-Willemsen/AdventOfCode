@@ -35,7 +35,7 @@ void free_boards(ll_i64** boards, int64_t n_boards) {
 
 int64_t sum_unmarked(ll_i64* board, ll_i64* numbers, int64_t n) {
     int64_t result = 0, index, value;
-    ll_i64_node* it = ll_i64_it(board);
+    ll_i64_node* it = board->start;
     while (ll_i64_next(&it, &value)) {
         index = ll_i64_indexof(numbers, value);
         if (index > n && index != -1) {
