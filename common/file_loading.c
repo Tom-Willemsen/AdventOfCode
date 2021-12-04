@@ -19,7 +19,6 @@ FILE* open_arg_as_file_or_exit(int argc, char** argv) {
     return fptr;
 }
 
-
 char** load_file_as_str_arr(FILE* fptr, uint64_t *size) {
     uint64_t l, lines = 1, linelength = 0, maxlinelength = 0;
     int c;
@@ -58,10 +57,18 @@ char** load_file_as_str_arr(FILE* fptr, uint64_t *size) {
     return data;
 }
 
-
 void free_str_arr(char** const str_arr, const uint64_t size) {
     for (uint64_t i=0; i<size; ++i) {
         free(str_arr[i]);
     }
     free(str_arr);
+}
+
+ll_i64* load_file_as_ll_i64(FILE* fptr) {
+    ll_i64* data = ll_i64_init();
+    int64_t value;
+    while(fscanf(fptr, "%" SCNu64, &value) != EOF) {
+        ll_i64_push_back(data, value);
+    }
+    return data;
 }
