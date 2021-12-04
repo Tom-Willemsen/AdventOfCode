@@ -28,34 +28,68 @@ char* data[20] = {
     "\n",
 };
 
+char* simpledata[8] = {
+    "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25\n",
+    "\n",
+    "1 2 3 4 5\n",
+    "6 7 8 9 10\n",
+    "11 12 13 14 15\n",
+    "16 17 18 19 20\n",
+    "21 22 23 24 25\n",
+    "\n",
+};
+
 void test_part_1 (void ** state) {
     int64_t n_boards = 3;
-    int64_t n_numbers = 0;
-    int64_t*** boards = load_boards(data, 20, &n_boards);
-    int64_t* numbers = str_to_int64_arr(data[0], ',', &n_numbers);
+    ll_i64** boards = load_boards(data, 20, &n_boards);
+    ll_i64* numbers = str_to_int64_ll(data[0], ',');
     
-    assert_int_equal(part1(boards, n_boards, numbers, n_numbers), 4512);
+    assert_int_equal(part1(boards, n_boards, numbers), 4512);
     
     free_boards(boards, n_boards);
-    free(numbers);
+    ll_i64_free(numbers);
+}
+
+void test_board_wins_afer_n_numbers (void ** state) {
+    int64_t n_boards = 1;
+    ll_i64** boards = load_boards(simpledata, 8, &n_boards);
+    ll_i64* numbers = str_to_int64_ll(simpledata[0], ',');
+    
+    assert_int_equal(board_wins_after_n_numbers(boards[0], numbers, 3), 0);
+    assert_int_equal(board_wins_after_n_numbers(boards[0], numbers, 4), 1);
+    
+    free_boards(boards, n_boards);
+    ll_i64_free(numbers);
+}
+
+void test_sum_unmarked (void ** state) {
+    int64_t n_boards = 1;
+    ll_i64** boards = load_boards(simpledata, 8, &n_boards);
+    ll_i64* numbers = str_to_int64_ll(simpledata[0], ',');
+    
+    assert_int_equal(sum_unmarked(boards[0], numbers, 4), 310);
+    
+    free_boards(boards, n_boards);
+    ll_i64_free(numbers);
 }
 
 void test_part_2 (void ** state) {
     int64_t n_boards = 3;
-    int64_t n_numbers = 0;
-    int64_t*** boards = load_boards(data, 20, &n_boards);
-    int64_t* numbers = str_to_int64_arr(data[0], ',', &n_numbers);
+    ll_i64** boards = load_boards(data, 20, &n_boards);
+    ll_i64* numbers = str_to_int64_ll(data[0], ',');
     
-    assert_int_equal(part2(boards, n_boards, numbers, n_numbers), 1924);
+    assert_int_equal(part2(boards, n_boards, numbers), 1924);
     
     free_boards(boards, n_boards);
-    free(numbers);
+    ll_i64_free(numbers);
 }
 
 int main (void)
 {
     const struct CMUnitTest tests [] =
     {
+        cmocka_unit_test (test_board_wins_afer_n_numbers),
+        cmocka_unit_test (test_sum_unmarked),
         cmocka_unit_test (test_part_1),
         cmocka_unit_test (test_part_2),
     };

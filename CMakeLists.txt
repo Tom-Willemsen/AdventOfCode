@@ -17,7 +17,7 @@ include_directories("common")
 function(add_unit_test name source link)
     add_executable(${name} ${source})
     target_include_directories(${name} PUBLIC 3)
-    target_link_libraries(${name} cmocka ${link})
+    target_link_libraries(${name} cmocka common ${link})
     add_custom_command(
         TARGET ${name} 
         POST_BUILD 
@@ -27,6 +27,7 @@ function(add_unit_test name source link)
     add_custom_target(${name}.RUN_TESTS ${name} ALL)
 endfunction(add_unit_test)
 
+add_subdirectory(common/)
 add_subdirectory(1/)
 add_subdirectory(2/)
 add_subdirectory(3/)
