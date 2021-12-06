@@ -1,28 +1,27 @@
 #include "day6_impl.h"
 
 int64_t simulate(ll_i64* initialstate, int64_t days) {
-    int64_t numbers[MAX_DAYS+1], value, result = 0, day, i, resetfish, newfish;
+    int64_t numbers[MAX_DAYS+1], result = 0, day, i, resetfish;
     
     for(i=0; i<MAX_DAYS+1; ++i) {
         numbers[i] = 0;
     }
     
     ll_i64_node* it = initialstate->start;
-    while(ll_i64_next(&it, &value)) {
-        assert(value <= MAX_DAYS);
-        numbers[value]++;
+    while(ll_i64_next(&it, &day)) {
+        assert(day <= MAX_DAYS);
+        numbers[day]++;
     }
     
-    for(day=0; day<days; ++day) {
+    for(i=0; i<days; ++i) {
         resetfish = numbers[0];
-        newfish = numbers[0];
         
-        for (i=1; i<MAX_DAYS+1; ++i) {
-            numbers[i-1] = numbers[i];
+        for (day=1; day<MAX_DAYS+1; ++day) {
+            numbers[day-1] = numbers[day];
         }
         
         numbers[6] += resetfish;
-        numbers[8] = newfish;
+        numbers[8] = resetfish;
     }
     
     for (i=0; i<MAX_DAYS+1; ++i) {
