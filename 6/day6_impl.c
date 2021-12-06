@@ -19,8 +19,8 @@ int64_t simulate(ll_i64* initialstate, int64_t days) {
         // with 0 ticks left shifts by 1 (modulo MAX_DAYS) each "day".
         // Then only need to do something about the fish who are on
         // "tick 0" that day (by incrementing "tick 7" by that amount)
-        // The fish which were in life 0 will get effectively moved to 
-        // the end (i.e. life 9).
+        // The fish which were in tick 0 will get effectively moved to 
+        // the end (i.e. tick 9)
         numbers[(i+REPRO_DAYS)%MAX_DAYS] += numbers[i%MAX_DAYS];
     }
     
