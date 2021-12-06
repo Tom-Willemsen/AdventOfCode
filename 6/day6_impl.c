@@ -1,14 +1,14 @@
 #include "day6_impl.h"
 
-int64_t simulate(ll_i64* initialstate, int64_t days) {
+int64_t simulate(list_i64* initialstate, int64_t days) {
     int64_t numbers[MAX_DAYS], result = 0, day, i;
     
     for(day=0; day<MAX_DAYS; ++day) {
         numbers[day] = 0;
     }
     
-    ll_i64_node* it = initialstate->start;
-    while(ll_i64_next(&it, &day)) {
+    for(i=0; i<initialstate->size; ++i) {
+        day = list_i64_get(initialstate, i);
         assert(day < MAX_DAYS);
         numbers[day]++;
     }

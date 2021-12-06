@@ -3,6 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-#include "linked_list.h"
+#include "list.h"
 
-ll_i64* str_to_int64_ll(const char* const data, const char delim);
+list_i64* str_to_int64_list(const char* const data, const char delim);

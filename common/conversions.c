@@ -1,10 +1,10 @@
 #include "conversions.h"
 
-ll_i64* str_to_int64_ll(const char* const data, const char delim) {
+list_i64* str_to_int64_list(const char* const data, const char delim) {
     int64_t slen = strlen(data);
     char* buffer = calloc(slen + 1, sizeof(char));
     
-    ll_i64* ll = ll_i64_init();
+    list_i64* list = list_i64_init(slen);
     
     int64_t buffer_idx = 0;
     char c;
@@ -12,7 +12,7 @@ ll_i64* str_to_int64_ll(const char* const data, const char delim) {
     for (int64_t idx = 0; idx < slen; ++idx) {
         c = data[idx];
         if (c == '\n' || (c == delim && buffer_idx > 0)) {
-            ll_i64_push_back(ll, strtol(buffer, NULL, 10));
+            list_i64_push_back(list, strtol(buffer, NULL, 10));
             
             for (int64_t i=0; i<slen + 1; ++i) {
                 buffer[i] = '\0';
@@ -26,5 +26,5 @@ ll_i64* str_to_int64_ll(const char* const data, const char delim) {
     }
     
     free(buffer);
-    return ll;
+    return list;
 }

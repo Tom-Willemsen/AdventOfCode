@@ -6,13 +6,13 @@ int main(int argc, char** argv) {
     int64_t part1, part2;
     char** points_s = load_file_as_str_arr(fptr, &data_size);
     fclose(fptr);
-    ll_i64* initialstate = str_to_int64_ll(points_s[0], ',');
+    list_i64* initialstate = str_to_int64_list(points_s[0], ',');
     free_str_arr(points_s, data_size);
     
     part1 = simulate(initialstate, 80);
     part2 = simulate(initialstate, 256);
     
-    ll_i64_free(initialstate);
+    list_i64_free(initialstate);
     
     printf("Part 1: %"PRId64"\n", part1);
     printf("Part 2: %"PRId64"\n", part2);

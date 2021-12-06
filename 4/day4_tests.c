@@ -41,47 +41,47 @@ char* simpledata[8] = {
 
 void test_part_1 (void ** state) {
     int64_t n_boards = 3;
-    ll_i64** boards = load_boards(data, 20, &n_boards);
-    ll_i64* numbers = str_to_int64_ll(data[0], ',');
+    list_i64** boards = load_boards(data, 20, &n_boards);
+    list_i64* numbers = str_to_int64_list(data[0], ',');
     
     assert_int_equal(part1(boards, n_boards, numbers), 4512);
     
     free_boards(boards, n_boards);
-    ll_i64_free(numbers);
+    list_i64_free(numbers);
 }
 
 void test_board_wins_afer_n_numbers (void ** state) {
     int64_t n_boards = 1;
-    ll_i64** boards = load_boards(simpledata, 8, &n_boards);
-    ll_i64* numbers = str_to_int64_ll(simpledata[0], ',');
+    list_i64** boards = load_boards(simpledata, 8, &n_boards);
+    list_i64* numbers = str_to_int64_list(simpledata[0], ',');
     
     assert_int_equal(board_wins_after_n_numbers(boards[0], numbers, 3), 0);
     assert_int_equal(board_wins_after_n_numbers(boards[0], numbers, 4), 1);
     
     free_boards(boards, n_boards);
-    ll_i64_free(numbers);
+    list_i64_free(numbers);
 }
 
 void test_sum_unmarked (void ** state) {
     int64_t n_boards = 1;
-    ll_i64** boards = load_boards(simpledata, 8, &n_boards);
-    ll_i64* numbers = str_to_int64_ll(simpledata[0], ',');
+    list_i64** boards = load_boards(simpledata, 8, &n_boards);
+    list_i64* numbers = str_to_int64_list(simpledata[0], ',');
     
     assert_int_equal(sum_unmarked(boards[0], numbers, 4), 310);
     
     free_boards(boards, n_boards);
-    ll_i64_free(numbers);
+    list_i64_free(numbers);
 }
 
 void test_part_2 (void ** state) {
     int64_t n_boards = 3;
-    ll_i64** boards = load_boards(data, 20, &n_boards);
-    ll_i64* numbers = str_to_int64_ll(data[0], ',');
+    list_i64** boards = load_boards(data, 20, &n_boards);
+    list_i64* numbers = str_to_int64_list(data[0], ',');
     
     assert_int_equal(part2(boards, n_boards, numbers), 1924);
     
     free_boards(boards, n_boards);
-    ll_i64_free(numbers);
+    list_i64_free(numbers);
 }
 
 int main (void)

@@ -1,15 +1,15 @@
-#include "linked_list.h"
+#include "deque.h"
 
-ll_i64* ll_i64_init () {
-    ll_i64* ll = calloc(1, sizeof(ll_i64));
+deque_i64* deque_i64_init () {
+    deque_i64* ll = calloc(1, sizeof(deque_i64));
     ll->size = 0;
     ll->start = NULL;
     ll->end = NULL;
     return ll;
 }
 
-void ll_i64_free(ll_i64* ll) {
-    ll_i64_node* node = ll->start;
+void deque_i64_free(deque_i64* ll) {
+    deque_i64_node* node = ll->start;
     if (ll->size > 0) {
         assert (node->prev == NULL);
         assert (node != NULL);
@@ -23,8 +23,8 @@ void ll_i64_free(ll_i64* ll) {
     free(ll);
 }
 
-void ll_i64_push_back(ll_i64* ll, int64_t item) {
-    ll_i64_node* node = calloc(1, sizeof(ll_i64_node));
+void deque_i64_push_back(deque_i64* ll, int64_t item) {
+    deque_i64_node* node = calloc(1, sizeof(deque_i64_node));
     assert(node != NULL);
     
     node->data = item;
@@ -42,8 +42,8 @@ void ll_i64_push_back(ll_i64* ll, int64_t item) {
     ll->size++;
 }
 
-void ll_i64_push_front(ll_i64* ll, int64_t item) {
-    ll_i64_node* node = calloc(1, sizeof(ll_i64_node));
+void deque_i64_push_front(deque_i64* ll, int64_t item) {
+    deque_i64_node* node = calloc(1, sizeof(deque_i64_node));
     assert(node != NULL);
     
     node->data = item;
@@ -61,11 +61,11 @@ void ll_i64_push_front(ll_i64* ll, int64_t item) {
     ll->size++;
 }
 
-ll_i64_node* ll_i64_node_at(ll_i64* ll, uint64_t index) {
+deque_i64_node* deque_i64_node_at(deque_i64* ll, uint64_t index) {
     assert(index >= 0);
     assert(index < ll->size);
     uint64_t i;
-    ll_i64_node* node;
+    deque_i64_node* node;
     assert(ll->size > 0);
     if (index * 2 > ll->size) {
         // closer to end than beginning
@@ -83,10 +83,10 @@ ll_i64_node* ll_i64_node_at(ll_i64* ll, uint64_t index) {
     return node;
 }
 
-void ll_i64_remove(ll_i64* ll, uint64_t index) {
+void deque_i64_remove(deque_i64* ll, uint64_t index) {
     assert(ll->size > index);
     
-    ll_i64_node* node = ll_i64_node_at(ll, index);
+    deque_i64_node* node = deque_i64_node_at(ll, index);
     
     if (node->prev != NULL) {
         node->prev->next = node->next;
@@ -105,37 +105,37 @@ void ll_i64_remove(ll_i64* ll, uint64_t index) {
     free(node);
 }
 
-int64_t ll_i64_peek_back(ll_i64* ll) {
+int64_t deque_i64_peek_back(deque_i64* ll) {
     assert(ll->size > 0);
     return ll->end->data;
 }
 
-int64_t ll_i64_peek_front(ll_i64* ll) {
+int64_t deque_i64_peek_front(deque_i64* ll) {
     assert(ll->size > 0);
     return ll->start->data;
 }
 
-int64_t ll_i64_get(ll_i64* ll, uint64_t index) {
-    ll_i64_node* node = ll_i64_node_at(ll, index);
+int64_t deque_i64_get(deque_i64* ll, uint64_t index) {
+    deque_i64_node* node = deque_i64_node_at(ll, index);
     return node->data;
 }
 
-int64_t ll_i64_pop_back(ll_i64* ll) {
-    int64_t result = ll_i64_peek_back(ll);
-    ll_i64_remove(ll, ll->size - 1);
+int64_t deque_i64_pop_back(deque_i64* ll) {
+    int64_t result = deque_i64_peek_back(ll);
+    deque_i64_remove(ll, ll->size - 1);
     return result;
 }
 
-int64_t ll_i64_pop_front(ll_i64* ll) {
-    int64_t result = ll_i64_peek_front(ll);
-    ll_i64_remove(ll, 0);
+int64_t deque_i64_pop_front(deque_i64* ll) {
+    int64_t result = deque_i64_peek_front(ll);
+    deque_i64_remove(ll, 0);
     return result;
 }
 
-int64_t ll_i64_contains(ll_i64* ll, int64_t n) {
-    ll_i64_node* it = ll->start;
+int64_t deque_i64_contains(deque_i64* ll, int64_t n) {
+    deque_i64_node* it = ll->start;
     int64_t value;
-    while (ll_i64_next(&it, &value)) {
+    while (deque_i64_next(&it, &value)) {
         if (value == n) {
             return 1;
         }
@@ -143,10 +143,10 @@ int64_t ll_i64_contains(ll_i64* ll, int64_t n) {
     return 0;
 }
 
-int64_t ll_i64_indexof(ll_i64* ll, int64_t n) {
+int64_t deque_i64_indexof(deque_i64* ll, int64_t n) {
     int64_t index = 0, value;
-    ll_i64_node* it = ll->start;
-    while (ll_i64_next(&it, &value)) {
+    deque_i64_node* it = ll->start;
+    while (deque_i64_next(&it, &value)) {
         if (value == n) {
             return index;
         }
@@ -155,7 +155,7 @@ int64_t ll_i64_indexof(ll_i64* ll, int64_t n) {
     return -1;
 }
 
-int64_t* ll_i64_as_array(ll_i64* ll, uint64_t* array_size) {
+int64_t* deque_i64_as_array(deque_i64* ll, uint64_t* array_size) {
     *array_size = ll->size;
     if (ll->size == 0) {
         return NULL;
@@ -163,16 +163,16 @@ int64_t* ll_i64_as_array(ll_i64* ll, uint64_t* array_size) {
     int64_t* arr = calloc(ll->size, sizeof(int64_t));
     assert(arr != NULL);
     
-    ll_i64_node* it = ll->start;
+    deque_i64_node* it = ll->start;
     int64_t value, arr_index = 0;
-    while (ll_i64_next(&it, &value)) {
+    while (deque_i64_next(&it, &value)) {
         arr[arr_index] =value;
         arr_index++;
     }
     return arr;
 }
 
-ll_i64* ll_i64_merge(ll_i64* ll1, ll_i64* ll2) {
+deque_i64* deque_i64_merge(deque_i64* ll1, deque_i64* ll2) {
     // merge lists in-place, may return either list, other list is freed
     if (ll1->size == 0) {
         free(ll1);
@@ -189,13 +189,4 @@ ll_i64* ll_i64_merge(ll_i64* ll1, ll_i64* ll2) {
     ll1->size += ll2->size;
     free(ll2);
     return ll1;
-}
-
-int64_t ll_i64_next(ll_i64_node** node, int64_t* value) {
-    if (*node == NULL) {
-        return 0;
-    }
-    *value = (*node)->data;
-    *node = (*node)->next;
-    return 1;
 }

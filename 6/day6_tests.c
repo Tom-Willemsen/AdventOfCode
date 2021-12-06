@@ -8,13 +8,13 @@
 char* testdata= "3,4,3,1,2\n";
 
 void test_day_6 (void ** state) {
-    ll_i64* initialstate = str_to_int64_ll(testdata, ',');
+    list_i64* initialstate = str_to_int64_list(testdata, ',');
     
     assert_int_equal(simulate(initialstate, 18), 26);
     assert_int_equal(simulate(initialstate, 80), 5934);
     assert_int_equal(simulate(initialstate, 256), 26984457539);
     
-    ll_i64_free(initialstate);
+    list_i64_free(initialstate);
 }
 
 int main (void)
