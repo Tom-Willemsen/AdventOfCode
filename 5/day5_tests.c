@@ -23,8 +23,8 @@ void test_day_5 (void ** state) {
     
     day5(testdata, 10, &part1, &part2);
     
-    // assert_int_equal(part1, 5);
-    // assert_int_equal(part2, 12);
+    assert_int_equal(part1, 5);
+    assert_int_equal(part2, 12);
 }
 
 int main (void)
