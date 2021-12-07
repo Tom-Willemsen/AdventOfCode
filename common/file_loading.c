@@ -67,7 +67,7 @@ void free_str_arr(char** const str_arr, const uint64_t size) {
 list_i64* load_file_as_list_i64(FILE* fptr) {
     list_i64* data = list_i64_init(1);
     int64_t value;
-    while(fscanf(fptr, "%" SCNu64, &value) != EOF) {
+    while(fscanf(fptr, "%" SCNd64, &value) != EOF) {
         list_i64_push_back(data, value);
     }
     return data;

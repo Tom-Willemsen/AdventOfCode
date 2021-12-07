@@ -10,7 +10,12 @@ add_compile_options(
     -Werror 
     -Wpedantic
     -Wno-unused-function
+    -march=native
 )
+
+include(CheckIPOSupported)
+check_ipo_supported()
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 include_directories("common")
 
