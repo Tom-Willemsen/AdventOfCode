@@ -142,6 +142,36 @@ void test_as_array (void ** state) {
     list_i64_free(list);
 }
 
+void test_min_max (void ** state) {
+    list_i64* list = list_i64_init(1);
+    
+    list_i64_push_back(list, 1);
+    list_i64_push_back(list, 2);
+    list_i64_push_back(list, 3);
+    list_i64_push_back(list, 4);
+    
+    assert_int_equal(list_i64_min(list), 1);
+    assert_int_equal(list_i64_max(list), 4);
+    
+    assert_int_equal(list_i64_pop_front(list), 1);
+    assert_int_equal(list_i64_pop_back(list), 4);
+    
+    assert_int_equal(list_i64_min(list), 2);
+    assert_int_equal(list_i64_max(list), 3);
+    
+    assert_int_equal(list_i64_pop_front(list), 2);
+    
+    assert_int_equal(list_i64_min(list), 3);
+    assert_int_equal(list_i64_max(list), 3);
+    
+    assert_int_equal(list_i64_pop_front(list), 3);
+    
+    assert_int_equal(list_i64_min(list), INT64_MAX);
+    assert_int_equal(list_i64_max(list), INT64_MIN);
+    
+    list_i64_free(list);
+}
+
 int main (void)
 {
     const struct CMUnitTest tests [] =

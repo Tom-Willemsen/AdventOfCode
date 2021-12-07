@@ -16,9 +16,22 @@ void list_i64_free(list_i64* list);
 void list_i64_push_back(list_i64* list, int64_t item);
 void list_i64_push_front(list_i64* list, int64_t item);
 void list_i64_remove(list_i64* list, uint64_t index);
-int64_t list_i64_peek_back(list_i64* list);
-int64_t list_i64_peek_front(list_i64* list);
-int64_t list_i64_get(list_i64* list, uint64_t index);
+
+static inline int64_t list_i64_peek_back(list_i64* list) {
+    assert(list->size > 0);
+    return list->array[list->size - 1];    
+}
+
+static inline int64_t list_i64_peek_front(list_i64* list) {
+    assert(list->size > 0);
+    return list->array[0];
+}
+
+static inline int64_t list_i64_get(list_i64* list, uint64_t index) {
+    assert(list->size > index);
+    return list->array[index];
+}
+
 int64_t list_i64_pop_back(list_i64* list);
 int64_t list_i64_pop_front(list_i64* list);
 int64_t list_i64_contains(list_i64* list, int64_t n);
