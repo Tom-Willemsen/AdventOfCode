@@ -23,5 +23,7 @@ int64_t list_i64_pop_back(list_i64* list);
 int64_t list_i64_pop_front(list_i64* list);
 int64_t list_i64_contains(list_i64* list, int64_t n);
 int64_t list_i64_indexof(list_i64* list, int64_t n);
+int64_t list_i64_min(list_i64* list);
+int64_t list_i64_max(list_i64* list);
 int64_t* list_i64_as_array(list_i64* list, uint64_t* array_size);
 list_i64* list_i64_merge(list_i64* list1, list_i64* list2);

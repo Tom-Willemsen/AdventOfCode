@@ -96,6 +96,26 @@ int64_t list_i64_indexof(list_i64* list, int64_t n) {
     return -1;
 }
 
+int64_t list_i64_min(list_i64* list) {
+    int64_t m = INT64_MAX;
+    for (uint64_t i=0; i<list->size; ++i) {
+        if (list->array[i] < m) {
+            m = list->array[i];
+        }
+    }
+    return m;
+}
+
+int64_t list_i64_max(list_i64* list) {
+    int64_t m = INT64_MIN;
+    for (uint64_t i=0; i<list->size; ++i) {
+        if (list->array[i] > m) {
+            m = list->array[i];
+        }
+    }
+    return m;
+}
+
 int64_t* list_i64_as_array(list_i64* list, uint64_t* array_size) {
     assert(list->size > 0);
     int64_t* result = calloc(list->size, sizeof(int64_t));
