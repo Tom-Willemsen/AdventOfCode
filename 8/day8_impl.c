@@ -38,16 +38,14 @@ list_i64* chars_from_str_with_len(char** patterns, uint64_t len) {
 }
 
 static inline uint_fast8_t is_5(char* c, list_i64* ones, list_i64* fours) {
-    uint_fast8_t result = 1;
+    int64_t f;
     for (uint64_t i=0; i<fours->size; ++i) {
-        if (!list_i64_contains(ones, list_i64_get(fours, i))) {
-            result = result && str_contains(c, list_i64_get(fours, i));
-        }
-        if (!result) {
-            break;
+        f = list_i64_get(fours, i);
+        if (!list_i64_contains(ones, f) && !str_contains(c, f)) {
+            return 0;
         }
     }
-    return result;
+    return 1;
 }
 
 static int64_t decode_str(char* c, list_i64* ones, list_i64* fours, list_i64* sevens) {
@@ -104,9 +102,9 @@ static int64_t calculate_p2(char** patterns, char** output) {
     sevens = chars_from_str_with_len(patterns, 3);
     
     int64_t n = 0;
-    for (uint64_t oi=0; oi<4; ++oi) {
+    for (uint64_t i=0; i<4; ++i) {
         n *= 10;
-        n += decode_str(output[oi], ones, fours, sevens);
+        n += decode_str(output[i], ones, fours, sevens);
     }
     list_i64_free(ones);
     list_i64_free(fours);
