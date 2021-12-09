@@ -18,6 +18,11 @@ static void coord_list_free(coord_list* list) {
     free(list);
 }
 
+static inline uint64_t coord_list_size(coord_list* list) {
+    assert(list->x->size == list->y->size);
+    return list->x->size;
+}
+
 static inline void coord_list_clear(coord_list* list) {
     list->y->size = 0;
     list->x->size = 0;
@@ -29,8 +34,9 @@ static inline void coord_list_append(coord_list* list, int64_t y, int64_t x) {
 }
 
 static int64_t coord_list_contains(coord_list* list, int64_t y, int64_t x) {
-    assert(list->x->size == list->y->size);
-    for (int64_t i=list->x->size - 1; i>=0; --i) {
+    // count backwards as the average position where an item would be found
+    // is 60% of the way through the list, i.e. closer to end than beginning.
+    for (int64_t i=coord_list_size(list) - 1; i>=0; --i) {
         if (list_i64_get(list->x, i) == x && list_i64_get(list->y, i) == y) {
             return 1;
         }
@@ -38,36 +44,29 @@ static int64_t coord_list_contains(coord_list* list, int64_t y, int64_t x) {
     return 0;
 }
 
-static inline uint64_t coord_list_size(coord_list* list) {
-    assert(list->x->size == list->y->size);
-    return list->x->size;
-}
-
-static uint8_t is_low_point(uint8_t** data, uint64_t ysize, uint64_t xsize, int64_t y, int64_t x) {
-    return !(
-        (x-1 >= 0 && data[y][x-1] <= data[y][x]) || 
-        (x+1 < xsize && data[y][x+1] <= data[y][x]) || 
-        (y-1 >= 0 && data[y-1][x] <= data[y][x]) || 
-        (y+1 < ysize && data[y+1][x] <= data[y][x])
-    );
+static inline uint8_t is_low_point(uint8_t** data, uint64_t ysize, uint64_t xsize, int64_t y, int64_t x) {
+    return (x-1 < 0 || data[y][x-1] > data[y][x]) &&
+           (x+1 >= xsize || data[y][x+1] > data[y][x]) &&
+           (y-1 < 0 || data[y-1][x] > data[y][x]) &&
+           (y+1 >= ysize || data[y+1][x] > data[y][x]);
 }
 
 static void find_basin(uint8_t** data, int64_t ysize, uint64_t xsize, int64_t y, int64_t x, coord_list* coord_list) {
-    if (x-1 >= 0 && 8 >= data[y][x-1] && !coord_list_contains(coord_list, y, x-1)) {
-        coord_list_append(coord_list, y, x-1);
-        find_basin(data, ysize, xsize, y, x-1, coord_list);
-    }
-    if (x+1 < xsize && 8 >= data[y][x+1] && !coord_list_contains(coord_list, y, x+1)) {
-        coord_list_append(coord_list, y, x+1);
-        find_basin(data, ysize, xsize, y, x+1, coord_list);
+    if (y+1 < ysize && 8 >= data[y+1][x] && !coord_list_contains(coord_list, y+1, x)) {
+        coord_list_append(coord_list, y+1, x);
+        find_basin(data, ysize, xsize, y+1, x, coord_list);
     }
     if (y-1 >= 0 && 8 >= data[y-1][x] && !coord_list_contains(coord_list, y-1, x)) {
         coord_list_append(coord_list, y-1, x);
         find_basin(data, ysize, xsize, y-1, x, coord_list);
     }
-    if (y+1 < ysize && 8 >= data[y+1][x] && !coord_list_contains(coord_list, y+1, x)) {
-        coord_list_append(coord_list, y+1, x);
-        find_basin(data, ysize, xsize, y+1, x, coord_list);
+    if (x+1 < xsize && 8 >= data[y][x+1] && !coord_list_contains(coord_list, y, x+1)) {
+        coord_list_append(coord_list, y, x+1);
+        find_basin(data, ysize, xsize, y, x+1, coord_list);
+    }
+    if (x-1 >= 0 && 8 >= data[y][x-1] && !coord_list_contains(coord_list, y, x-1)) {
+        coord_list_append(coord_list, y, x-1);
+        find_basin(data, ysize, xsize, y, x-1, coord_list);
     }
 }
 
@@ -77,8 +76,8 @@ void calculate(uint8_t** data, uint64_t ysize, uint64_t xsize, int64_t* part1, i
     *part1 = 0;
     
     coord_list* clist = coord_list_init();
-    for (y=0; y<ysize; ++y) {
-        for (x=0; x<xsize; ++x) {
+    for (x=0; x<xsize; ++x) {
+        for (y=0; y<ysize; ++y) {
             if (is_low_point(data, ysize, xsize, y, x)) {
                 *part1 += (1 + data[y][x]);
                 
