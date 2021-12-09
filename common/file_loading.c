@@ -57,6 +57,56 @@ char** load_file_as_str_arr(FILE* fptr, uint64_t *size) {
     return data;
 }
 
+uint8_t** load_dense_file_as_uint8_arr(FILE* fptr, uint64_t *y_size, uint64_t *x_size) {
+    uint64_t x, y, lines = 0, linelength = 0, maxlinelength = 0;
+    int c;
+    uint8_t **data = NULL;
+    
+    while ((c = fgetc(fptr)) != EOF) {
+        if (c == '\n') {
+            lines++;
+            if (linelength > maxlinelength) {
+                maxlinelength = linelength;
+            }
+            linelength = 0;
+            continue;
+        }
+        linelength++;
+    }
+    
+    if (lines == 0) {
+        puts("file format error, no lines");
+        exit(EXIT_FAILURE);
+    }
+    
+    data = calloc(lines, sizeof(uint8_t*));
+    for (y=0; y<lines; ++y) {
+        data[y] = calloc(maxlinelength, sizeof(uint8_t));
+    }
+    
+    rewind(fptr);
+    
+    x = 0;
+    y = 0;
+    while ((c = fgetc(fptr)) != EOF) {
+        if (c == '\n') {
+            y++;
+            x=0;
+            continue;
+        }
+        if (c < 48 || c > 57 || y > lines || x > maxlinelength) {
+            printf("file format error, c=%d, x=%"PRIu64", y=%"PRIu64", lines=%"PRIu64", maxlinelength=%"PRIu64"\n", c, x, y, lines, maxlinelength);
+            exit(EXIT_FAILURE);
+        }
+        data[y][x] = c - 48;
+        x++;
+    }
+    
+    *y_size = lines;
+    *x_size = maxlinelength;
+    return data;
+}
+
 void free_str_arr(char** const str_arr, const uint64_t size) {
     for (uint64_t i=0; i<size; ++i) {
         free(str_arr[i]);

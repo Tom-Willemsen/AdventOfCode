@@ -5,7 +5,7 @@ list_i64* list_i64_init (uint64_t initial_capacity) {
     list->size = 0;
     assert(initial_capacity > 0);
     list->capacity = initial_capacity;
-    list->array = calloc(initial_capacity, sizeof(int64_t*));
+    list->array = calloc(initial_capacity, sizeof(int64_t));
     return list;
 }
 
@@ -16,7 +16,7 @@ void list_i64_free(list_i64* list) {
 
 static void list_i64_resize(list_i64* list) {
     uint64_t new_capacity = list->capacity * 2;
-    list->array = realloc(list->array, new_capacity * sizeof(void*));
+    list->array = realloc(list->array, new_capacity * sizeof(int64_t));
     assert(list->array != NULL);
     list->capacity = new_capacity;
 }
