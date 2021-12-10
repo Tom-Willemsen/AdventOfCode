@@ -126,3 +126,17 @@ list_i64* list_i64_merge(list_i64* list1, list_i64* list2) {
         return list2;
     }
 }
+
+static inline int compare_elements(const void * a, const void * b) {
+    if (*(int64_t*)a > *(int64_t*)b) {
+        return 1;
+    } else if (*(int64_t*)a < *(int64_t*)b) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+void list_i64_sort_inplace(list_i64* list) {
+    qsort(list->array, list->size, sizeof(int64_t), compare_elements);
+}

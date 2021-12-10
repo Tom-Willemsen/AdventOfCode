@@ -24,8 +24,8 @@ static inline uint64_t coord_list_size(coord_list* list) {
 }
 
 static inline void coord_list_clear(coord_list* list) {
-    list->y->size = 0;
-    list->x->size = 0;
+    list_i64_clear(list->y);
+    list_i64_clear(list->x);
 }
 
 static inline void coord_list_append(coord_list* list, int64_t y, int64_t x) {

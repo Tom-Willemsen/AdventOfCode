@@ -17,6 +17,10 @@ void list_i64_push_back(list_i64* list, int64_t item);
 void list_i64_push_front(list_i64* list, int64_t item);
 void list_i64_remove(list_i64* list, uint64_t index);
 
+static inline void list_i64_clear(list_i64* list) {
+    list->size = 0;
+}
+
 static inline int64_t list_i64_peek_back(list_i64* list) {
     assert(list->size > 0);
     return list->array[list->size - 1];    
@@ -40,3 +44,4 @@ int64_t list_i64_min(list_i64* list);
 int64_t list_i64_max(list_i64* list);
 int64_t* list_i64_as_array(list_i64* list, uint64_t* array_size);
 list_i64* list_i64_merge(list_i64* list1, list_i64* list2);
+void list_i64_sort_inplace(list_i64* list);

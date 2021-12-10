@@ -172,6 +172,35 @@ void test_min_max (void ** state) {
     list_i64_free(list);
 }
 
+void test_sort_inplace (void ** state) {
+    list_i64* list = list_i64_init(1);
+    
+    list_i64_sort_inplace(list);
+    
+    list_i64_push_back(list, 4);
+    list_i64_push_back(list, 2);
+    list_i64_push_back(list, 3);
+    
+    list_i64_sort_inplace(list);
+    
+    assert_int_equal(list_i64_get(list, 0), 2);
+    assert_int_equal(list_i64_get(list, 1), 3);
+    assert_int_equal(list_i64_get(list, 2), 4);
+    
+    list_i64_push_back(list, 1);
+    list_i64_push_front(list, 5);
+    
+    list_i64_sort_inplace(list);
+    
+    assert_int_equal(list_i64_get(list, 0), 1);
+    assert_int_equal(list_i64_get(list, 1), 2);
+    assert_int_equal(list_i64_get(list, 2), 3);
+    assert_int_equal(list_i64_get(list, 3), 4);
+    assert_int_equal(list_i64_get(list, 4), 5);
+    
+    list_i64_free(list);
+}
+
 int main (void)
 {
     const struct CMUnitTest tests [] =
@@ -184,6 +213,8 @@ int main (void)
         cmocka_unit_test (test_indexof),
         cmocka_unit_test (test_remove),
         cmocka_unit_test (test_as_array),
+        cmocka_unit_test (test_min_max),
+        cmocka_unit_test (test_sort_inplace),
     };
     int count_fail_tests =
         cmocka_run_group_tests (tests, NULL, NULL);
