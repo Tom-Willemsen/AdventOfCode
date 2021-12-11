@@ -1,9 +1,7 @@
 #include <inttypes.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "conversions.h"
 #include "file_loading.h"
 #include "list.h"
 #include "tuple_list.h"
