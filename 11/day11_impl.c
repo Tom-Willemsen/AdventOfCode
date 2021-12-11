@@ -25,19 +25,12 @@ void calculate(uint8_t** data, uint64_t ysize, uint64_t xsize, int64_t* part1, i
     for (int64_t step=0; step<INT64_MAX; ++step) {
         for (y=0; y<ysize; ++y) {
             for (x=0; x<xsize; ++x) {
-                data[y][x]++;
-            }
-        }
-        
-        assert(list_tuple_i64_size(visited) == 0);
-        
-        for (y=0; y<ysize; ++y) {
-            for (x=0; x<xsize; ++x) {
-                if (data[y][x] > 9) {
-                    data[y][x] = 0;
+                if (data[y][x] > 8) {
                     if (!list_tuple_i64_contains(visited, y, x)) {
                         flash_recursive(data, y, x, ysize, xsize, visited);
                     }
+                } else {
+                    data[y][x]++;
                 }
             }
         }

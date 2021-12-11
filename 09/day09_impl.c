@@ -7,22 +7,17 @@ static inline uint8_t is_low_point(uint8_t** data, uint64_t ysize, uint64_t xsiz
            (y+1 >= ysize || data[y+1][x] > data[y][x]);
 }
 
-static void find_basin(uint8_t** data, int64_t ysize, uint64_t xsize, int64_t y, int64_t x, list_tuple_i64* list_tuple_i64) {
-    if (y+1 < ysize && 8 >= data[y+1][x] && !list_tuple_i64_contains(list_tuple_i64, y+1, x)) {
-        list_tuple_i64_push_back(list_tuple_i64, y+1, x);
-        find_basin(data, ysize, xsize, y+1, x, list_tuple_i64);
-    }
-    if (y-1 >= 0 && 8 >= data[y-1][x] && !list_tuple_i64_contains(list_tuple_i64, y-1, x)) {
-        list_tuple_i64_push_back(list_tuple_i64, y-1, x);
-        find_basin(data, ysize, xsize, y-1, x, list_tuple_i64);
-    }
-    if (x+1 < xsize && 8 >= data[y][x+1] && !list_tuple_i64_contains(list_tuple_i64, y, x+1)) {
-        list_tuple_i64_push_back(list_tuple_i64, y, x+1);
-        find_basin(data, ysize, xsize, y, x+1, list_tuple_i64);
-    }
-    if (x-1 >= 0 && 8 >= data[y][x-1] && !list_tuple_i64_contains(list_tuple_i64, y, x-1)) {
-        list_tuple_i64_push_back(list_tuple_i64, y, x-1);
-        find_basin(data, ysize, xsize, y, x-1, list_tuple_i64);
+static void find_basin(uint8_t** data, int64_t ysize, uint64_t xsize, int64_t y, int64_t x, list_tuple_i64* clist) {
+    int64_t nb_y[4] = {y+1, y-1, y, y};
+    int64_t nb_x[4] = {x, x, x+1, x-1};
+    
+    for (uint64_t i=0; i<4; ++i) {
+        if (nb_y[i] >= 0 && nb_y[i] < ysize && nb_x[i] >= 0 && nb_x[i] < xsize && 
+            8 >= data[nb_y[i]][nb_x[i]] && !list_tuple_i64_contains(clist, nb_y[i], nb_x[i])) 
+        {
+            list_tuple_i64_push_back(clist, nb_y[i], nb_x[i]);
+            find_basin(data, ysize, xsize, nb_y[i], nb_x[i], clist);
+        }
     }
 }
 
