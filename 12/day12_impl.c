@@ -34,13 +34,7 @@ static list_tuple_i64* parse_connections(char** data, uint64_t data_size) {
 }
 
 static inline int64_t can_visit(list_i64* path, int64_t node, int64_t vsc2) {
-    if (!is_small(node)) {
-        return 1;
-    } else if (vsc2) {
-        return !list_i64_contains(path, node);
-    } else {
-        return 1;
-    }
+    return !vsc2 || !is_small(node) || !list_i64_contains(path, node);
 }
 
 static void extend_path(list_i64* path, int64_t node, list_tuple_i64* conns, int64_t* n_paths, int64_t vsc2) {
