@@ -9,13 +9,16 @@ static int64_t name_to_id(char* name) {
     } else if (strncmp(name, "end", 4) == 0) {
         return END_ID;
     } else {
-        assert(strnlen(name, 10) == 2);
-        return (name[0] * 256) + name[1];
+        if (strnlen(name, 2) == 1) {
+            return name[0];
+        } else {
+            assert(name[0] > 96 == name[1] > 96);
+            return (name[0] * 256) + name[1];
+        }
     }
 }
 
 static inline int64_t is_small(int64_t id) {
-    assert(((id % 256) > 96) == ((id / 256) > 96));
     return (id % 256) > 96;
 }
 
@@ -44,9 +47,7 @@ static void extend_path(list_i64* path, int64_t node, list_tuple_i64* conns, int
         if (nodefrom == node) {
             if (nodeto == END_ID) {
                 (*n_paths)++;
-            } else if (nodeto == START_ID) {
-                continue;
-            } else {
+            } else if (nodeto != START_ID) {
                 if (can_visit(path, nodeto, vsc2)) {
                     newvsc2 = vsc2 || (is_small(nodeto) && list_i64_contains(path, nodeto));
                     list_i64_push_back(path, nodeto);
@@ -61,7 +62,6 @@ static void extend_path(list_i64* path, int64_t node, list_tuple_i64* conns, int
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) {
     list_tuple_i64* conns = parse_connections(data, data_size);
     list_i64* path = list_i64_init(50);
-    list_i64_push_back(path, START_ID);
     
     *part1 = 0;
     *part2 = 0;
