@@ -15,6 +15,7 @@ static int64_t name_to_id(char* name) {
 }
 
 static inline int64_t is_small(int64_t id) {
+    assert(((id % 256) > 96) == ((id / 256) > 96));
     return (id % 256) > 96;
 }
 
@@ -32,49 +33,32 @@ static list_tuple_i64* parse_connections(char** data, uint64_t data_size) {
     return conns;
 }
 
-static int64_t can_visit_p1(list_i64* path, int64_t node) {
-    if (node == START_ID) {
-        return 0;
-    }
+static inline int64_t can_visit(list_i64* path, int64_t node, int64_t vsc2) {
     if (!is_small(node)) {
         return 1;
-    }
-    return !list_i64_contains(path, node);
-}
-
-static int64_t can_visit_p2(list_i64* path, int64_t node) {
-    int64_t pn, vc2 = 0;
-    if (node == START_ID) {
-        return 0;
-    }
-    if (!is_small(node)) {
-        return 1;
-    }
-    for (uint64_t i=0; i<list_i64_size(path); ++i) {
-        pn = list_i64_get(path, i);
-        if (is_small(pn) && list_i64_count(path, pn) >= 2) {
-            vc2 = 1;
-            break;
-        }
-    }
-    if (vc2) {
+    } else if (vsc2) {
         return !list_i64_contains(path, node);
     } else {
         return 1;
     }
 }
 
-static void extend_path(list_i64* path, int64_t node, list_tuple_i64* conns, int64_t* n_paths, int64_t (*visit_func)(list_i64*, int64_t)) {
-    int64_t nodefrom, nodeto;
+static void extend_path(list_i64* path, int64_t node, list_tuple_i64* conns, int64_t* n_paths, int64_t vsc2) {
+    int64_t nodefrom, nodeto, newvsc2 = 0;
     for (uint64_t i=0; i<list_tuple_i64_size(conns); ++i) {
         list_tuple_i64_get(conns, i, &nodefrom, &nodeto);
         if (nodefrom == node) {
             if (nodeto == END_ID) {
                 (*n_paths)++;
-            } else if ((*visit_func)(path, nodeto)) {
-                list_i64_push_back(path, nodeto);
-                extend_path(path, nodeto, conns, n_paths, visit_func);
-                list_i64_pop_back(path);
+            } else if (nodeto == START_ID) {
+                continue;
+            } else {
+                if (can_visit(path, nodeto, vsc2)) {
+                    newvsc2 = vsc2 || (is_small(nodeto) && list_i64_contains(path, nodeto));
+                    list_i64_push_back(path, nodeto);
+                    extend_path(path, nodeto, conns, n_paths, newvsc2);
+                    list_i64_pop_back(path);
+                }
             }
         }
     }
@@ -88,8 +72,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = 0;
     *part2 = 0;
     
-    extend_path(path, START_ID, conns, part1, can_visit_p1);
-    extend_path(path, START_ID, conns, part2, can_visit_p2);
+    extend_path(path, START_ID, conns, part1, 1);
+    extend_path(path, START_ID, conns, part2, 0);
     
     list_i64_free(path);
     list_tuple_i64_free(conns);
