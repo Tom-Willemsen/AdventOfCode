@@ -72,6 +72,16 @@ int64_t list_i64_contains(list_i64* list, int64_t n) {
     return 0;
 }
 
+int64_t list_i64_count(list_i64* list, int64_t n) {
+    int64_t count = 0;
+    for (uint64_t i=0; i<list->size; ++i) {
+        if (list->array[i] == n) {
+            count++;
+        }
+    }
+    return count;
+}
+
 int64_t list_i64_indexof(list_i64* list, int64_t n) {
     for (uint64_t i=0; i<list->size; ++i) {
         if (list->array[i] == n) {

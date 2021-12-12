@@ -39,6 +39,11 @@ static inline void list_tuple_i64_pop_back(list_tuple_i64* list, int64_t* y, int
     *x = list_i64_pop_back(list->x);
 }
 
+static inline void list_tuple_i64_get(list_tuple_i64* list, uint64_t index, int64_t* y, int64_t* x) {
+    *y = list_i64_get(list->y, index);
+    *x = list_i64_get(list->x, index);
+}
+
 static int64_t list_tuple_i64_contains(list_tuple_i64* list, int64_t y, int64_t x) {
     for (int64_t i=list_tuple_i64_size(list) - 1; i>=0; --i) {
         if (list_i64_get(list->x, i) == x && list_i64_get(list->y, i) == y) {
