@@ -81,6 +81,11 @@ static inline int64_t list_i64_get(list_i64* list, uint64_t index) {
     return list->array[index];
 }
 
+static inline void list_i64_set(list_i64* list, uint64_t index, int64_t value) {
+    assert(list->size > index);
+    list->array[index] = value;
+}
+
 static int64_t list_i64_pop_back(list_i64* list) {
     assert(list->size > 0);
     int64_t result = list->array[list->size - 1];
