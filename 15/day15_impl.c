@@ -1,6 +1,6 @@
 #include "day15_impl.h"
 
-const int64_t BIG = 99999999;
+const int64_t BIG = INT64_MAX;
 
 struct sizes {
     uint64_t grid_x;
@@ -18,19 +18,18 @@ static inline void coord_from_id(int64_t id, struct sizes* sizes, int64_t* x, in
     *x = id % sizes->grid_x;
 }
 
-static inline uint8_t risk(uint8_t** data, struct sizes* sizes, int64_t x, int64_t y) {
-    int64_t v;
-    v = data[y%sizes->data_y][x%sizes->data_x] + y / sizes->data_y + x / sizes->data_x;
+static inline uint64_t risk(uint8_t** data, struct sizes* sizes, int64_t x, int64_t y) {
+    int64_t v = data[y%sizes->data_y][x%sizes->data_x] + y / sizes->data_y + x / sizes->data_x;
     return ((v-1)%9)+1;
 }
 
 static int64_t solve(uint8_t** data, struct sizes* sizes) {
-    int64_t current, next, cx, cy, cost;
+    int64_t current, next, cx, cy, cost, currcost;
     int64_t nx[4], ny[4];
     priorityQ_i64* openset = priorityQ_i64_init();
     priorityQ_i64_push_bbias(openset, 0, 0);
 
-    map_i64* knowncosts = map_i64_init(sizes->grid_y*sizes->grid_x);
+    map_i64* knowncosts = map_i64_init(sizes->grid_y*sizes->grid_x/2);
     map_i64_set(knowncosts, 0, 0);
     
     while (priorityQ_i64_size(openset) > 0) {
@@ -42,10 +41,11 @@ static int64_t solve(uint8_t** data, struct sizes* sizes) {
         nx[2] = cx-1;  ny[2] = cy;
         nx[3] = cx;    ny[3] = cy-1;
         
+        currcost = map_i64_get(knowncosts, current, BIG);
         for (uint64_t i=0; i<4; ++i) {
             if (nx[i] < sizes->grid_x && ny[i] < sizes->grid_y && nx[i] >= 0 && ny[i] >= 0) {
                 next = id_from_coord(sizes, nx[i], ny[i]);
-                cost = map_i64_get(knowncosts, current, BIG) + risk(data, sizes, nx[i], ny[i]);
+                cost = currcost + risk(data, sizes, nx[i], ny[i]);
                 
                 if (cost < map_i64_get(knowncosts, next, BIG)) {
                     map_i64_set(knowncosts, next, cost);

@@ -36,7 +36,7 @@ static inline uint64_t map_i64_hashfunction(uint64_t n_buckets, int64_t key) {
 static inline list_tuple_i64* map_i64_get_or_create_bucket(map_i64* map, int64_t key) {
     uint64_t bucket = map_i64_hashfunction(map->n_buckets, key);
     if (map->buckets[bucket] == NULL) {
-        map->buckets[bucket] = list_tuple_i64_init(1);
+        map->buckets[bucket] = list_tuple_i64_init(2);
     }
     return map->buckets[bucket];
 }
