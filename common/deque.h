@@ -21,7 +21,8 @@ deque_i64* deque_i64_init ();
 void deque_i64_free(deque_i64* ll);
 void deque_i64_push_back(deque_i64* ll, int64_t item);
 void deque_i64_push_front(deque_i64* ll, int64_t item);
-void deque_i64_insertbefore(deque_i64* ll, deque_i64_node* node, int64_t item);
+void deque_i64_insert_before(deque_i64* ll, deque_i64_node* node, int64_t item);
+void deque_i64_insert_after(deque_i64* ll, deque_i64_node* node, int64_t item);
 deque_i64_node* deque_i64_node_at(deque_i64* ll, uint64_t index);
 void deque_i64_remove(deque_i64* ll, uint64_t index);
 int64_t deque_i64_peek_back(deque_i64* ll);
@@ -40,5 +41,14 @@ static inline int64_t deque_i64_next(deque_i64_node** node, int64_t* value) {
     }
     *value = (*node)->data;
     *node = (*node)->next;
+    return 1;
+}
+
+static inline int64_t deque_i64_prev(deque_i64_node** node, int64_t* value) {
+    if (*node == NULL) {
+        return 0;
+    }
+    *value = (*node)->data;
+    *node = (*node)->prev;
     return 1;
 }

@@ -28,15 +28,15 @@ static int64_t solve(uint8_t** data, struct sizes* sizes) {
     int64_t current, next, cx, cy, cost;
     int64_t nx[4], ny[4];
     priorityQ_i64* openset = priorityQ_i64_init();
-    priorityQ_i64_push(openset, 0, 0);
+    priorityQ_i64_push_bbias(openset, 0, 0);
 
-    map_i64* knowncosts = map_i64_init(sizes->grid_x * sizes->grid_y);
+    map_i64* knowncosts = map_i64_init(sizes->grid_y*sizes->grid_x);
     map_i64_set(knowncosts, 0, 0);
     
     while (priorityQ_i64_size(openset) > 0) {
         current = priorityQ_i64_pop(openset);
-        
         coord_from_id(current, sizes, &cx, &cy);
+        
         nx[0] = cx+1;  ny[0] = cy;
         nx[1] = cx;    ny[1] = cy+1;
         nx[2] = cx-1;  ny[2] = cy;
@@ -49,7 +49,7 @@ static int64_t solve(uint8_t** data, struct sizes* sizes) {
                 
                 if (cost < map_i64_get(knowncosts, next, BIG)) {
                     map_i64_set(knowncosts, next, cost);
-                    priorityQ_i64_push(openset, cost, next);
+                    priorityQ_i64_push_bbias(openset, cost, next);
                 }
             }
         }

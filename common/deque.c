@@ -61,9 +61,8 @@ void deque_i64_push_front(deque_i64* ll, int64_t item) {
     ll->size++;
 }
 
-void deque_i64_insertbefore(deque_i64* ll, deque_i64_node* node, int64_t item) {
+void deque_i64_insert_before(deque_i64* ll, deque_i64_node* node, int64_t item) {
     assert(node != NULL);
-    assert(deque_i64_contains(ll, node->data));
     if (ll->size == 0 || ll->start == node) {
         deque_i64_push_front(ll, item);
         return;
@@ -76,6 +75,23 @@ void deque_i64_insertbefore(deque_i64* ll, deque_i64_node* node, int64_t item) {
     assert(node->prev != NULL);
     node->prev->next = new_node;
     node->prev = new_node;
+    ll->size++;
+}
+
+void deque_i64_insert_after(deque_i64* ll, deque_i64_node* node, int64_t item) {
+    assert(node != NULL);
+    if (ll->size == 0 || ll->end == node) {
+        deque_i64_push_back(ll, item);
+        return;
+    }
+    deque_i64_node* new_node = calloc(1, sizeof(deque_i64_node));
+    new_node->data = item;
+    new_node->prev = node;
+    new_node->next = node->next;
+    
+    assert(node->next != NULL);
+    node->next->prev = new_node;
+    node->next = new_node;
     ll->size++;
 }
 

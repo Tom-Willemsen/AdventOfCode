@@ -24,36 +24,48 @@ static inline uint64_t priorityQ_i64_size(priorityQ_i64* q) {
     return q->values->size;
 }
 
-static void priorityQ_i64_push(priorityQ_i64* q, int64_t p, int64_t v) {
+static void priorityQ_i64_push_fbias(priorityQ_i64* q, int64_t p, int64_t v) {
+    // push with performance bias to inserting near front of queue
     int64_t priority, value;
     deque_i64_node* priority_n = q->priorities->start;
     deque_i64_node* value_n = q->values->start;
-    assert(q != NULL);
     assert(q->priorities != NULL);
     assert(q->values != NULL);
     assert(q->values->size == q->priorities->size);
-    assert((q->priorities->size > 0) == (q->priorities->start != NULL));
-    assert((q->values->size > 0) == (q->values->start != NULL));
-    
-    if (q->priorities->size == 0) {
-        deque_i64_push_front(q->priorities, p);
-        deque_i64_push_front(q->values, v);
-        return;
-    }
     
     do {
         if (priority_n == NULL || value_n == NULL) {
-            break;
-        }
-        if (priority_n->data > p) {
-            deque_i64_insertbefore(q->priorities, priority_n, p);
-            deque_i64_insertbefore(q->values, value_n, v);
+            deque_i64_push_back(q->priorities, p);
+            deque_i64_push_back(q->values, v);
+            return;
+        } else if (priority_n->data > p) {
+            deque_i64_insert_before(q->priorities, priority_n, p);
+            deque_i64_insert_before(q->values, value_n, v);
             return;
         }
     } while(deque_i64_next(&priority_n, &priority) && deque_i64_next(&value_n, &value));
+}
+
+static void priorityQ_i64_push_bbias(priorityQ_i64* q, int64_t p, int64_t v) {
+    // push with performance bias to inserting near back of queue
+    int64_t priority, value;
+    deque_i64_node* priority_n = q->priorities->end;
+    deque_i64_node* value_n = q->values->end;
+    assert(q->priorities != NULL);
+    assert(q->values != NULL);
+    assert(q->values->size == q->priorities->size);
     
-    deque_i64_push_back(q->priorities, p);
-    deque_i64_push_back(q->values, v);
+    do {
+        if (priority_n == NULL || value_n == NULL) {
+            deque_i64_push_front(q->priorities, p);
+            deque_i64_push_front(q->values, v);
+            return;
+        } else if (priority_n->data < p) {
+            deque_i64_insert_after(q->priorities, priority_n, p);
+            deque_i64_insert_after(q->values, value_n, v);
+            return;
+        }
+    } while(deque_i64_prev(&priority_n, &priority) && deque_i64_prev(&value_n, &value));
 }
 
 static int64_t priorityQ_i64_pop(priorityQ_i64* q) {
