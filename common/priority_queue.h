@@ -38,7 +38,7 @@ static void priorityQ_i64_push_fbias(priorityQ_i64* q, int64_t p, int64_t v) {
             deque_i64_push_back(q->priorities, p);
             deque_i64_push_back(q->values, v);
             return;
-        } else if (priority_n->data > p) {
+        } else if (priority_n->data >= p) {
             deque_i64_insert_before(q->priorities, priority_n, p);
             deque_i64_insert_before(q->values, value_n, v);
             return;
@@ -60,7 +60,7 @@ static void priorityQ_i64_push_bbias(priorityQ_i64* q, int64_t p, int64_t v) {
             deque_i64_push_front(q->priorities, p);
             deque_i64_push_front(q->values, v);
             return;
-        } else if (priority_n->data < p) {
+        } else if (priority_n->data <= p) {
             deque_i64_insert_after(q->priorities, priority_n, p);
             deque_i64_insert_after(q->values, value_n, v);
             return;
