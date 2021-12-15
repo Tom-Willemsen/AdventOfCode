@@ -12,7 +12,7 @@ static int64_t name_to_id(const char* const name) {
         if (strnlen(name, 2) == 1) {
             return name[0];
         } else {
-            assert(name[0] > 96 == name[1] > 96);
+            assert((name[0] > 96) == (name[1] > 96));
             return (name[0] * 256) + name[1];
         }
     }
