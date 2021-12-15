@@ -14,6 +14,7 @@ static list_tuple_i64* list_tuple_i64_init(uint64_t initial_capacity) {
 }
 
 static void list_tuple_i64_free(list_tuple_i64* list) {
+    assert(list->x->size == list->y->size);
     list_i64_free(list->x);
     list_i64_free(list->y);
     free(list);
@@ -25,21 +26,25 @@ static inline uint64_t list_tuple_i64_size(list_tuple_i64* list) {
 }
 
 static inline void list_tuple_i64_clear(list_tuple_i64* list) {
+    assert(list->x->size == list->y->size);
     list_i64_clear(list->y);
     list_i64_clear(list->x);
 }
 
 static inline void list_tuple_i64_push_back(list_tuple_i64* list, int64_t y, int64_t x) {
+    assert(list->x->size == list->y->size);
     list_i64_push_back(list->y, y);
     list_i64_push_back(list->x, x);
 }
 
 static inline void list_tuple_i64_pop_back(list_tuple_i64* list, int64_t* y, int64_t* x) {
+    assert(list->x->size == list->y->size);
     *y = list_i64_pop_back(list->y);
     *x = list_i64_pop_back(list->x);
 }
 
 static inline void list_tuple_i64_get(list_tuple_i64* list, uint64_t index, int64_t* y, int64_t* x) {
+    assert(list->x->size == list->y->size);
     *y = list_i64_get(list->y, index);
     *x = list_i64_get(list->x, index);
 }

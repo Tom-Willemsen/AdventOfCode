@@ -21,6 +21,7 @@ deque_i64* deque_i64_init ();
 void deque_i64_free(deque_i64* ll);
 void deque_i64_push_back(deque_i64* ll, int64_t item);
 void deque_i64_push_front(deque_i64* ll, int64_t item);
+void deque_i64_insertbefore(deque_i64* ll, deque_i64_node* node, int64_t item);
 deque_i64_node* deque_i64_node_at(deque_i64* ll, uint64_t index);
 void deque_i64_remove(deque_i64* ll, uint64_t index);
 int64_t deque_i64_peek_back(deque_i64* ll);
