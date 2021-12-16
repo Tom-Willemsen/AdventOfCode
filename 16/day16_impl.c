@@ -3,7 +3,10 @@
 static list_i64* get_bits(char* data) {
     int64_t v;
     list_i64* bits = list_i64_init(strlen(data) * 4);
-    for (uint64_t i=0; i<strlen(data)-1; ++i) {
+    for (uint64_t i=0; i<strlen(data); ++i) {
+        if (data[i] == '\n') {
+            continue;
+        }
         v = (data[i] >= '0' && data[i] <= '9') ? data[i] - '0' : data[i] + 10 - 'A';
         assert(v >=0 && v <= 0xF);
         for (uint64_t j=0; j<4; ++j) {
