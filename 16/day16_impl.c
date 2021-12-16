@@ -84,6 +84,9 @@ static void parse_op(list_i64* data, uint64_t offset, int64_t* n_bits, int64_t* 
         *value = (list_i64_get(read_values, 0) < list_i64_get(read_values, 1)) ? 1 : 0;
     } else if (op_type == OP_EQ) {
         *value = (list_i64_get(read_values, 0) == list_i64_get(read_values, 1)) ? 1 : 0;
+    } else {
+        puts("bad operator");
+        *value=-1;
     }
     
     *n_bits = header_len + length_of_subpackets;
