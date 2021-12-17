@@ -14,6 +14,7 @@ typedef struct sized_priorityQ_i64 {
     int64_t max_priority;
     int64_t min_populated_priority;
     int64_t max_populated_priority;
+    uint64_t size;
     list_i64** tasks;
 } sized_priorityQ_i64;
 
@@ -28,6 +29,7 @@ static sized_priorityQ_i64* sized_priorityQ_i64_init(int64_t min_priority, int64
         q->tasks[i] = list_i64_init(1);
     }
 
+    q->size = 0;
     q->min_priority = min_priority;
     q->max_priority = max_priority;
     q->min_populated_priority = min_priority;
@@ -44,11 +46,7 @@ static void sized_priorityQ_i64_free(sized_priorityQ_i64* q) {
 }
 
 static inline uint64_t sized_priorityQ_i64_size(sized_priorityQ_i64* q) {
-    uint64_t size = 0;
-    for (int64_t i=q->min_populated_priority; i<=q->max_populated_priority; ++i) {
-        size += list_i64_size(q->tasks[q->min_priority + i]);
-    }
-    return size;
+    return q->size;
 }
 
 static void sized_priorityQ_i64_push(sized_priorityQ_i64* q, int64_t p, int64_t v) {
@@ -57,6 +55,7 @@ static void sized_priorityQ_i64_push(sized_priorityQ_i64* q, int64_t p, int64_t 
     q->min_populated_priority = min(q->min_populated_priority, p);
     q->max_populated_priority = max(q->max_populated_priority, p);
     list_i64_push_back(q->tasks[q->min_priority + p], v);
+    q->size++;
 }
 
 static int64_t sized_priorityQ_i64_pop(sized_priorityQ_i64* q) {
@@ -67,6 +66,8 @@ static int64_t sized_priorityQ_i64_pop(sized_priorityQ_i64* q) {
     
     assert(list_i64_size(q->tasks[q->min_priority + result_priority]) > 0);
     result_value = list_i64_pop_back(q->tasks[q->min_priority + result_priority]);
+    
+    q->size--;
     
     if (list_i64_size(q->tasks[q->min_priority + result_priority]) == 0) {
         for (int64_t i=result_priority; i<=q->max_populated_priority; ++i) {
