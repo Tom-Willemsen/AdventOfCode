@@ -18,12 +18,12 @@ void calculate(char* data, int64_t* part1, int64_t* part2) {
     assert(max_target_y < 0);
     assert(min_target_x > 0);
     
-    for (initial_xv=1; initial_xv <= max_target_x; ++initial_xv) {
-        for (initial_yv=min_target_y; initial_yv <= -min_target_y; ++initial_yv) {
+    for (initial_yv=min_target_y; initial_yv <= -min_target_y; ++initial_yv) {
+        for (initial_xv=1; initial_xv <= max_target_x; ++initial_xv) {
             max_y = INT64_MIN;
             
             if (initial_yv > 0) {
-                // Skip the top "half" of the symmetric ballistic curve by directly calculating where it
+                // Skip the top "half" of the ballistic curve by directly calculating where it
                 // will re-cross the x-axis and starting from there instead.
                 s = 2*initial_yv + 1;
                 x = min(s, initial_xv) * initial_xv - sum_0_to(min(s, initial_xv)-1);

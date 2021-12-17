@@ -6,9 +6,10 @@
 #include "day17_impl.h"
 
 void test_day_17 (void ** state) {
-//     int64_t part1, part2;
-//     calculate("8A004A801A8002F478", &part1, &part2);
-//     assert_int_equal(part1, 16);
+    int64_t part1, part2;
+    calculate("target area: x=20..30, y=-10..-5", &part1, &part2);
+    assert_int_equal(part1, 45);
+    assert_int_equal(part2, 112);
 }
 
 int main (void)
