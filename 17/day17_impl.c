@@ -8,7 +8,7 @@ static inline int64_t sum_0_to(int64_t x) {
 void calculate(char* data, int64_t* part1, int64_t* part2) {
     int64_t min_target_x, max_target_x, min_target_y, max_target_y;
     int64_t initial_xv, initial_yv, xv, yv, x, y, max_y, s;
-    int64_t valid = 0, best_y = INT64_MIN;
+    int64_t valid = 0, best_y = 0;
     sscanf(data, "target area: x=%"SCNd64"..%"SCNd64", y=%"SCNd64"..%"SCNd64, 
                &min_target_x, &max_target_x, &min_target_y, &max_target_y);
     
@@ -20,7 +20,7 @@ void calculate(char* data, int64_t* part1, int64_t* part2) {
     
     for (initial_yv=min_target_y; initial_yv <= -min_target_y; ++initial_yv) {
         for (initial_xv=1; initial_xv <= max_target_x; ++initial_xv) {
-            max_y = INT64_MIN;
+            max_y = 0;
             
             if (initial_yv > 0) {
                 // Skip the top "half" of the ballistic curve by directly calculating where it
