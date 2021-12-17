@@ -12,8 +12,8 @@ void calculate(char* data, int64_t* part1, int64_t* part2) {
     sscanf(data, "target area: x=%"SCNd64"..%"SCNd64", y=%"SCNd64"..%"SCNd64, 
                &min_target_x, &max_target_x, &min_target_y, &max_target_y);
     
-    assert(min_target_x < max_target_x);
-    assert(min_target_y < max_target_y);
+    assert(min_target_x <= max_target_x);
+    assert(min_target_y <= max_target_y);
     
     assert(max_target_y < 0);
     assert(min_target_x > 0);
