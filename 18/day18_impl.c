@@ -181,9 +181,12 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = magnitude(sum);
     free_node_tree(sum);
     
-    #pragma omp parallel for shared(data, data_size)
+    #pragma omp parallel for shared(data, data_size, biggest_sum)
     for (uint64_t i=0; i<data_size; ++i) {
         for (uint64_t j=0; j<data_size; ++j) {
+            if (i==j) {
+                continue;
+            }
             SFNumberNode* sum = add(parse_and_reduce(data[i]), parse_and_reduce(data[j]));
             int64_t m = magnitude(sum);
             #pragma omp critical
