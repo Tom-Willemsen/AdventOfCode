@@ -1,4 +1,5 @@
 #include "day18_impl.h"
+#include <omp.h>
 
 static const int64_t NODE_TYPE_CONST = 1;
 static const int64_t NODE_TYPE_PAIR = 2;
@@ -180,10 +181,15 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = magnitude(sum);
     free_node_tree(sum);
     
+    #pragma omp parallel for shared(data, data_size)
     for (uint64_t i=0; i<data_size; ++i) {
         for (uint64_t j=0; j<data_size; ++j) {
             SFNumberNode* sum = add(parse_and_reduce(data[i]), parse_and_reduce(data[j]));
-            biggest_sum = max(biggest_sum, magnitude(sum));
+            int64_t m = magnitude(sum);
+            #pragma omp critical
+            {
+                biggest_sum = max(biggest_sum, m);
+            }
             free_node_tree(sum);
         }
     }

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 project(advent_of_code LANGUAGES C)
 
 find_library(CMOCKA cmocka)
+find_package(OpenMP)
 
 set(CMAKE_C_STANDARD 17)
 
@@ -13,6 +14,11 @@ add_compile_options(
     -Wpedantic
     -Wno-unused-function
     -march=native
+    -fopenmp
+)
+
+add_link_options(
+    -fopenmp
 )
 
 if(ASAN)
