@@ -63,7 +63,7 @@ static list_tuple_i64* parse_connections(char** data, uint64_t data_size) {
     int64_t id1, id2;
     list_tuple_i64* conns = list_tuple_i64_init(data_size * 2);
     for (uint64_t i=0; i<data_size; ++i) {
-        sscanf(data[i], "%10[^-]-%10[^\n]" SCNd64, b1, b2);
+        sscanf(data[i], "%9[^-]-%9[^\n]" SCNd64, b1, b2);
         id1 = name_to_id(b1);
         id2 = name_to_id(b2);
         list_tuple_i64_push_back(conns, id1, id2);

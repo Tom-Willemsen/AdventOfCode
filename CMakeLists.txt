@@ -5,6 +5,8 @@ find_library(CMOCKA cmocka)
 
 set(CMAKE_C_STANDARD 17)
 
+option(ASAN "Enable address sanitizer" OFF)
+
 add_compile_options(
     -Wall 
     -Werror 
@@ -12,6 +14,20 @@ add_compile_options(
     -Wno-unused-function
     -march=native
 )
+
+if(ASAN)
+  add_compile_options(
+    -fstack-protector-all
+    -fsanitize=address
+    -fno-omit-frame-pointer
+    $<$<C_COMPILER_ID:Clang>:-fsanitize-address-use-after-return=always>
+    -fsanitize-address-use-after-scope
+  )
+  add_link_options(
+    -fsanitize=address
+  )
+endif(ASAN)
+
 
 include(CheckIPOSupported)
 check_ipo_supported()

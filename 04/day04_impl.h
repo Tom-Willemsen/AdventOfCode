@@ -5,7 +5,7 @@
 #include "conversions.h"
 #include "list.h"
 
-const int64_t BOARD_SIZE = 5;
+static const int64_t BOARD_SIZE = 5;
 
 list_i64** load_boards(char** data, int64_t data_size, int64_t* n_boards);
 void free_boards(list_i64** boards, int64_t n_boards);
