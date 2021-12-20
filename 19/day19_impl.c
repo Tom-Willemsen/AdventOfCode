@@ -46,7 +46,7 @@ static int64_t try_arrange_with_transform(list_tuple3_i64* scanner, int64_t scan
             // starting at 11 here is a slight trick - If any of the first 11 would cause more than 12 matches, then we'll pick
             // up one of the others. So we can skip the first 11.
             for (uint64_t test_beacon=11; test_beacon<list_tuple3_i64_size(scanner); ++test_beacon) {
-                int64_t dx, dy, dz, scanner_pos_x, scanner_pos_y, scanner_pos_z, test_beacon_x, test_beacon_y, test_beacon_z, seen_beacons = 0;
+                int64_t dx, dy, dz, scanner_pos_x, scanner_pos_y, scanner_pos_z, test_beacon_x, test_beacon_y, test_beacon_z, seen_beacons = 1;
                 
                 list_tuple3_i64_get(scanner, test_beacon, &test_beacon_x, &test_beacon_y, &test_beacon_z);
                 apply_coord_transform(transform, test_beacon_x, test_beacon_y, test_beacon_z, &dx, &dy, &dz);
@@ -56,11 +56,25 @@ static int64_t try_arrange_with_transform(list_tuple3_i64* scanner, int64_t scan
                 
                 for (uint64_t j=0; j<list_tuple3_i64_size(scanner); ++j) {
                     int64_t beacon_x, beacon_y, beacon_z;
+                    
+                    if (j == test_beacon) {
+                        // this one is already accounted for by setting seen_beacons to 1 above.
+                        continue;
+                    }
+                    
                     list_tuple3_i64_get(scanner, j, &beacon_x, &beacon_y, &beacon_z);
                     apply_coord_transform(transform, beacon_x, beacon_y, beacon_z, &dx, &dy, &dz);
                     
                     if (set_tuple3_i64_contains(known_beacons, scanner_pos_x + dx, scanner_pos_y + dy, scanner_pos_z + dz)) {
                         seen_beacons++;
+                        if (seen_beacons >= 12) {
+                            // We've seen enough beacons - move on
+                            break;
+                        }
+                    } else if (seen_beacons + list_tuple3_i64_size(scanner) - j < 12) {
+                        // early exit condition - even if all the remaining beacons align, we still wouldn't have
+                        // 12 matches
+                        break;
                     }
                 }
                 
@@ -106,7 +120,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         list_i64_push_back(scanners_left_to_arrange, i);
     }
     
-    set_tuple3_i64* known_beacons = set_tuple3_i64_init(25000);
+    set_tuple3_i64* known_beacons = set_tuple3_i64_init(16384);
     set_tuple3_i64_add_all(known_beacons, scanners[0]);
     
     list_tuple3_i64* scanner_positions = list_tuple3_i64_init(num_scanners);
@@ -116,7 +130,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     list_tuple3_i64* found_beacons = list_tuple3_i64_init(data_size);
     
     while (list_i64_size(scanners_left_to_arrange) > 0) {
-        #pragma omp parallel for schedule(auto) default(shared)
+        #pragma omp parallel for schedule(dynamic, 1) default(shared)
         for (uint64_t i=0; i<list_i64_size(scanners_left_to_arrange); ++i) {
             int64_t n = list_i64_get(scanners_left_to_arrange, i);
             list_tuple3_i64* scanner = scanners[n];
