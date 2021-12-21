@@ -29,7 +29,7 @@ static uint8_t** parse_grid(char** data, uint64_t data_size, uint64_t* n_rows, u
     return grid;
 }
 
-static inline uint8_t get_or_default(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint64_t row, uint64_t col, uint8_t def) {
+static inline uint64_t get_or_default(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint64_t row, uint64_t col, uint8_t def) {
     if (row < 0 || col < 0 || row >= n_rows || col >= n_cols) {
         return def;
     } else {
@@ -37,7 +37,7 @@ static inline uint8_t get_or_default(uint8_t** grid, uint64_t n_rows, uint64_t n
     }
 }
 
-static int64_t map_pixel_to_lookup_id(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint64_t row, uint64_t col, uint8_t def) {
+static uint64_t map_pixel_to_lookup_id(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint64_t row, uint64_t col, uint8_t def) {
     return (get_or_default(grid, n_rows, n_cols, row-1, col-1, def) << 8) + 
            (get_or_default(grid, n_rows, n_cols, row-1, col, def) << 7) + 
            (get_or_default(grid, n_rows, n_cols, row-1, col+1, def) << 6) + 
@@ -52,7 +52,8 @@ static int64_t map_pixel_to_lookup_id(uint8_t** grid, uint64_t n_rows, uint64_t 
 static int64_t count_after_n_iterations(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint8_t* lookup, int64_t iterations) {
     uint8_t** nextgrid;
     uint8_t def = 0;
-    uint64_t rows = n_rows, cols = n_cols, result = 0, next_rows, next_cols;
+    uint64_t rows = n_rows, cols = n_cols, next_rows, next_cols;
+    int64_t result = 0;
     uint64_t lookup_id;
     
     uint8_t** oldgrid = calloc(n_rows, sizeof(uint8_t*));
