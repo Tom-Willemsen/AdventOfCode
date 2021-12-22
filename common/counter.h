@@ -17,9 +17,9 @@ static void counter_i64_free(counter_i64* counter) {
     free(counter);
 }
 
-// static inline void counter_i64_clear(counter_i64* counter) {
-//     map_i64_clear(counter->map);
-// }
+static inline void counter_i64_clear(counter_i64* counter) {
+    map_i64_clear(counter->map);
+}
 
 static inline uint64_t counter_i64_size(counter_i64* counter) {
     return map_i64_size(counter->map);

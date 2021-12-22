@@ -48,65 +48,48 @@ static struct cuboid* intersection(struct cuboid* c1, struct cuboid* c2) {
     }
 }
 
-static int64_t is_big_cuboid(struct cuboid* cuboid) {
-    return min(cuboid->x1, cuboid->x2) < -50 || 
-           max(cuboid->x1, cuboid->x2) > 50 || 
-           min(cuboid->y1, cuboid->y2) < -50 || 
-           max(cuboid->y1, cuboid->y2) > 50 || 
-           min(cuboid->z1, cuboid->z2) < -50 || 
-           max(cuboid->z1, cuboid->z2) > 50;
+static inline int64_t is_big_cuboid(int64_t x1, int64_t x2, int64_t y1, int64_t y2, int64_t z1, int64_t z2) {
+    return min(x1, x2) < -50 || max(x1, x2) > 50 || min(y1, y2) < -50 || max(y1, y2) > 50 || min(z1, z2) < -50 || max(z1, z2) > 50;
 }
 
 static int64_t solve(int64_t** cubes, uint64_t size, int64_t ignore_big_cubes) {
-    counter_i64* cuboid_states = counter_i64_init(2000);
-    counter_i64_iterator* iter;
+    list_tuple_i64* cuboid_states = list_tuple_i64_init(1);
     int64_t result = 0, k, v;
 
     for (uint64_t i=0; i<size; ++i) {
         int64_t* cube = cubes[i];
         int64_t action = cube[6];
         
-        struct cuboid* cuboid = create_cuboid(cube[0], cube[1], cube[2], cube[3], cube[4], cube[5]);
-        
-        if (ignore_big_cubes && is_big_cuboid(cuboid)) {
-            free(cuboid);
+        if (ignore_big_cubes && is_big_cuboid(cube[0], cube[1], cube[2], cube[3], cube[4], cube[5])) {
             continue;
         }
         
-        counter_i64* new_cuboid_states = counter_i64_init(2000);
+        struct cuboid* cuboid = create_cuboid(cube[0], cube[1], cube[2], cube[3], cube[4], cube[5]);
         
-        iter = counter_i64_iter(cuboid_states);
-        while (counter_i64_next(iter, &k, &v)) {
+        uint64_t s = list_tuple_i64_size(cuboid_states);
+        for (uint64_t j=0; j<s; ++j) {
+            list_tuple_i64_get(cuboid_states, j, &k, &v);
             struct cuboid* intersect = intersection((struct cuboid*) k, cuboid);
 
             if (intersect != NULL) {
-                counter_i64_decrementby(new_cuboid_states, (int64_t) intersect, v);
+                list_tuple_i64_push_back(cuboid_states, (int64_t) intersect, -v);
             }
         }
-        counter_i64_iter_free(iter);
                 
-        if (action == 1) {
-            counter_i64_increment(new_cuboid_states, (int64_t) cuboid);
+        if (action) {
+            list_tuple_i64_push_back(cuboid_states, (int64_t) cuboid, 1);
         } else {
             free(cuboid);
         }
-        
-        iter = counter_i64_iter(new_cuboid_states);
-        while (counter_i64_next(iter, &k, &v)) {
-            counter_i64_incrementby(cuboid_states, k, v);
-        }
-        counter_i64_iter_free(iter);
-        counter_i64_free(new_cuboid_states);
     }
     
-    iter = counter_i64_iter(cuboid_states);
-    while (counter_i64_next(iter, &k, &v)) {
+    for (uint64_t j=0; j<list_tuple_i64_size(cuboid_states); ++j) {
+        list_tuple_i64_get(cuboid_states, j, &k, &v);
         struct cuboid* cuboid = (struct cuboid*) k;
         result += (cuboid->x2 - cuboid->x1 + 1) * (cuboid->y2 - cuboid->y1 + 1) * (cuboid->z2 - cuboid->z1 + 1) * v;
         free(cuboid);
     }
-    counter_i64_iter_free(iter);
-    counter_i64_free(cuboid_states);
+    list_tuple_i64_free(cuboid_states);
     
     return result;
 }
