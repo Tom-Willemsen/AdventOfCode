@@ -29,6 +29,25 @@ static void map_i64_free(map_i64* map) {
     free(map);
 }
 
+static void map_i64_clear(map_i64* map) {
+    for (uint64_t i=0; i<map->n_buckets; ++i) {
+        if (map->buckets[i] != NULL) {
+            list_tuple_i64_free(map->buckets[i]);
+        }
+        map->buckets[i] = NULL;
+    }
+}
+
+static uint64_t map_i64_size(map_i64* map) {
+    uint64_t result = 0;
+    for (uint64_t i=0; i<map->n_buckets; ++i) {
+        if (map->buckets[i] != NULL) {
+            result += list_tuple_i64_size(map->buckets[i]);
+        }
+    }
+    return result;
+}
+
 static inline uint64_t map_i64_hashfunction(uint64_t n_buckets, int64_t key) {
     return i64abs(key) % n_buckets;
 }
@@ -52,7 +71,7 @@ static void map_i64_set(map_i64* map, int64_t key, int64_t value) {
     for (uint64_t i=0; i<list_tuple_i64_size(bucket); ++i) {
         list_tuple_i64_get(bucket, i, &k, &v);
         if (k == key) {
-            list_i64_set(bucket->y, i, value);
+            list_i64_set(bucket->x, i, value);
             return;
         }
     }
@@ -71,4 +90,41 @@ static int64_t map_i64_get(map_i64* map, int64_t key, int64_t def) {
         }
     }
     return def;
+}
+
+typedef struct map_i64_iterator {
+    map_i64* map;
+    uint64_t bucket;
+    uint64_t idx;
+} map_i64_iterator;
+
+static map_i64_iterator* map_i64_iter(map_i64* map) {
+    map_i64_iterator* iter = calloc(1, sizeof(map_i64_iterator));
+    iter->map = map;
+    iter->bucket = 0;
+    iter->idx = 0;
+    return iter;
+}
+
+static void map_i64_iter_free(map_i64_iterator* iter) {
+    free(iter);
+}
+
+static int64_t map_i64_next(map_i64_iterator* iter, int64_t* key, int64_t* value) {
+    uint64_t idx = iter->idx;
+    for (uint64_t bucket=iter->bucket; bucket < iter->map->n_buckets; ++bucket) {
+        if (iter->map->buckets[bucket] == NULL) {
+            continue;
+        }
+        for (uint64_t i=idx; i<list_tuple_i64_size(iter->map->buckets[bucket]); ++i) {
+            iter->bucket = bucket;
+            iter->idx = i + 1;
+            list_tuple_i64_get(iter->map->buckets[bucket], i, key, value);
+            return 1;
+        }
+        idx = 0;
+    }
+    *key = 0xBADBADBADBAD;
+    *value = 0xBADBADBADBAD;
+    return 0;
 }

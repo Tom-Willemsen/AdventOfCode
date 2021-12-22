@@ -18,11 +18,12 @@ static list_tuple_i64* parse_rules(char** data, uint64_t data_size) {
 }
 
 int64_t solve(char* start, list_tuple_i64* rules, int64_t iterations) {
-    uint64_t i, j, k;
+    uint64_t i, k;
     int64_t rule_id, added, diff, key, value;
     counter_i64* pair_count = counter_i64_init(20);
     counter_i64* char_count = counter_i64_init(20);
     list_tuple_i64* incs = list_tuple_i64_init(20);
+    counter_i64_iterator* iter;
     
     assert(strlen(start) > 3);
     for (i=0; i<strlen(start)-2; ++i) {
@@ -30,8 +31,8 @@ int64_t solve(char* start, list_tuple_i64* rules, int64_t iterations) {
     }
     
     for (i=0; i<iterations; ++i) {
-        for (j=0; j<counter_i64_size(pair_count); ++j) {
-            counter_i64_get_by_index(pair_count, j, &key, &value);
+        iter = counter_i64_iter(pair_count);
+        while (counter_i64_next(iter, &key, &value)) {
             for (k=0; k<list_tuple_i64_size(rules); ++k) {
                 list_tuple_i64_get(rules, k, &rule_id, &added);
                 if (rule_id == key) {
@@ -42,6 +43,7 @@ int64_t solve(char* start, list_tuple_i64* rules, int64_t iterations) {
                 }
             }
         }
+        counter_i64_iter_free(iter);
         while (list_tuple_i64_size(incs) > 0) {
             list_tuple_i64_pop_back(incs, &key, &value);
             counter_i64_incrementby(pair_count, key, value);
@@ -50,10 +52,11 @@ int64_t solve(char* start, list_tuple_i64* rules, int64_t iterations) {
     
     counter_i64_increment(char_count, start[0]);
     
-    for (i=0; i<counter_i64_size(pair_count); ++i) {
-        counter_i64_get_by_index(pair_count, i, &key, &value);
+    iter = counter_i64_iter(pair_count);
+    while (counter_i64_next(iter, &key, &value)) {
         counter_i64_incrementby(char_count, key & 0xff, value);
     }
+    counter_i64_iter_free(iter);
     
     diff = counter_i64_max(char_count) - counter_i64_min(char_count);
     

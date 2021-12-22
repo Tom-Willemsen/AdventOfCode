@@ -55,15 +55,15 @@ static void unpack_state(int64_t packed_state, int64_t* p1pos, int64_t* p1score,
 static int64_t calculate_part2(int64_t p1_pos, int64_t p2_pos) {
     int64_t p1roll, p1roll_freq, p2roll, p2roll_freq, newstate, p1wins = 0, p2wins = 0;
     int64_t state, count, p1pos, p1score, p2pos, p2score, turn;
-    counter_i64* game_states = counter_i64_init(50);
+    counter_i64* game_states = counter_i64_init(10000);
+    counter_i64_iterator* iter;
     
     counter_i64_set(game_states, pack_state(p1_pos, 0, p2_pos, 0, 0), 1);
     
     for (uint64_t t = 0; t<21; ++t) {
             
-        int64_t num_states = counter_i64_size(game_states);
-        for (uint64_t sn=0; sn<num_states; ++sn) {
-            counter_i64_get_by_index(game_states, sn, &state, &count);
+        iter = counter_i64_iter(game_states);
+        while (counter_i64_next(iter, &state, &count)) {
             unpack_state(state, &p1pos, &p1score, &p2pos, &p2score, &turn);
             
             if (p1score >= 21 || p2score >= 21 || turn != t) {
@@ -98,10 +98,11 @@ static int64_t calculate_part2(int64_t p1_pos, int64_t p2_pos) {
                 }
             }
         }
+        counter_i64_iter_free(iter);
     }
     
-    for (uint64_t sn=0; sn<counter_i64_size(game_states); ++sn) {
-        counter_i64_get_by_index(game_states, sn, &state, &count);
+    iter = counter_i64_iter(game_states);
+    while (counter_i64_next(iter, &state, &count)) {
         unpack_state(state, &p1pos, &p1score, &p2pos, &p2score, &turn);
         
         if (p1score >= 21) {
@@ -110,6 +111,7 @@ static int64_t calculate_part2(int64_t p1_pos, int64_t p2_pos) {
             p2wins += count;
         }
     }
+    counter_i64_iter_free(iter);
     
     counter_i64_free(game_states);
     

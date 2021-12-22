@@ -93,3 +93,43 @@ static int64_t set_tuple3_i64_size(set_tuple3_i64* set) {
     }
     return size;
 }
+
+
+typedef struct set_tuple3_i64_iterator {
+    set_tuple3_i64* set;
+    uint64_t bucket;
+    uint64_t idx;
+} set_tuple3_i64_iterator;
+
+static set_tuple3_i64_iterator* set_tuple3_i64_iter(set_tuple3_i64* set) {
+    set_tuple3_i64_iterator* iter = calloc(1, sizeof(set_tuple3_i64_iterator));
+    iter->set = set;
+    iter->bucket = 0;
+    iter->idx = 0;
+    return iter;
+}
+
+static void set_tuple3_i64_iter_free(set_tuple3_i64_iterator* iter) {
+    free(iter);
+}
+
+static int64_t set_tuple3_i64_next(set_tuple3_i64_iterator* iter, int64_t* x, int64_t* y, int64_t* z) {
+    uint64_t idx = iter->idx;
+    for (uint64_t bucket=iter->bucket; bucket < iter->set->n_buckets; ++bucket) {
+        if (iter->set->buckets[bucket] == NULL) {
+            continue;
+        }
+        for (uint64_t i=idx; i<list_tuple3_i64_size(iter->set->buckets[bucket]); ++i) {
+            iter->bucket = bucket;
+            iter->idx = i + 1;
+            list_tuple3_i64_get(iter->set->buckets[bucket], i, x, y, z);
+            return 1;
+        }
+        idx = 0;
+    }
+    *x = 0xBADBADBADBAD;
+    *y = 0xBADBADBADBAD;
+    *z = 0xBADBADBADBAD;
+    return 0;
+}
+
