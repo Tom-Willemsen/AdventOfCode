@@ -1,9 +1,5 @@
 #include "day22_impl.h"
 
-// static const int64_t OFF = 0;
-static const int64_t ON = 1;
-
-
 static int64_t** parse_data(char** data, uint64_t data_size) {
     int64_t** result = calloc(data_size, sizeof(int64_t*));
     
@@ -80,8 +76,8 @@ static int64_t solve(int64_t** cubes, uint64_t size, int64_t ignore_big_cubes) {
         }
         counter_i64_iter_free(iter);
                 
-        if (action == ON) {
-            counter_i64_incrementby(new_cuboid_states, (int64_t) cuboid, ON);
+        if (action == 1) {
+            counter_i64_increment(new_cuboid_states, (int64_t) cuboid);
         } else {
             free(cuboid);
         }
