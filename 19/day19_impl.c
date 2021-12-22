@@ -85,6 +85,8 @@ static int64_t try_arrange_with_transform(list_tuple3_i64* scanner, int64_t scan
                     list_tuple3_i64_push_back(scanner_positions, scanner_pos_x, scanner_pos_y, scanner_pos_z);
                     list_i64_push_back(found_scanners, scanner_number);
                 }
+                
+                set_tuple3_i64_iter_free(iter);
                 return 1;
             }
         }
