@@ -48,8 +48,17 @@ static struct cuboid* intersection(struct cuboid* c1, struct cuboid* c2) {
     }
 }
 
+static int64_t is_big_cuboid(struct cuboid* cuboid) {
+    return min(cuboid->x1, cuboid->x2) < -50 || 
+           max(cuboid->x1, cuboid->x2) > 50 || 
+           min(cuboid->y1, cuboid->y2) < -50 || 
+           max(cuboid->y1, cuboid->y2) > 50 || 
+           min(cuboid->z1, cuboid->z2) < -50 || 
+           max(cuboid->z1, cuboid->z2) > 50;
+}
+
 static int64_t solve(int64_t** cubes, uint64_t size, int64_t ignore_big_cubes) {
-    counter_i64* cuboid_states = counter_i64_init(100);
+    counter_i64* cuboid_states = counter_i64_init(2000);
     counter_i64_iterator* iter;
     int64_t result = 0, k, v;
 
@@ -57,14 +66,14 @@ static int64_t solve(int64_t** cubes, uint64_t size, int64_t ignore_big_cubes) {
         int64_t* cube = cubes[i];
         int64_t action = cube[6];
         
-        if (ignore_big_cubes && !(max(cube[0], cube[1]) <= 50 && max(cube[2], cube[3]) <= 50 && max(cube[4], cube[5]) <= 50 &&
-            min(cube[0], cube[1]) >= -50 && min(cube[2], cube[3]) >= -50 && min(cube[4], cube[5]) >= -50)) {
+        struct cuboid* cuboid = create_cuboid(cube[0], cube[1], cube[2], cube[3], cube[4], cube[5]);
+        
+        if (ignore_big_cubes && is_big_cuboid(cuboid)) {
+            free(cuboid);
             continue;
         }
         
-        struct cuboid* cuboid = create_cuboid(cube[0], cube[1], cube[2], cube[3], cube[4], cube[5]);
-        
-        counter_i64* new_cuboid_states = counter_i64_init(100);
+        counter_i64* new_cuboid_states = counter_i64_init(2000);
         
         iter = counter_i64_iter(cuboid_states);
         while (counter_i64_next(iter, &k, &v)) {
