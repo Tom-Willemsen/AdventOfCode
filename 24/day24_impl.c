@@ -67,15 +67,28 @@ static int64_t execute_prog(char** program, uint64_t start, uint64_t stop, int64
     return mem[3];
 }
 
-static void dfs(char** program, list_i64* indices, list_i64* inputs, list_i64* max_z, int64_t z, int64_t* solution, int64_t is_part2) {
+static int64_t execute_prog_memo(char** program, map_i64* cache, uint64_t start, uint64_t stop, int64_t input, int64_t z) {
+    int64_t id = (start << 48) + (stop << 32) + (input << 24) + z;
+    int64_t result = map_i64_get(cache, id, INT64_MIN);
+    if (result == INT64_MIN) {
+        result = execute_prog(program, start, stop, input, z);
+        map_i64_set(cache, id, result);
+        return result;
+    } else {
+        return result;
+    }
+}
+
+static void dfs(char** program, map_i64* cache, list_i64* indices, list_i64* inputs, list_i64* max_z, int64_t z, int64_t* solution, int64_t is_part2) {
     int64_t iz;
     assert(list_i64_size(inputs) <= 14);
     
     if (list_i64_size(inputs) == 0) {
         iz = 0;
     } else {
-        iz = execute_prog(
+        iz = execute_prog_memo(
                  program, 
+                 cache,
                  list_i64_get(indices, list_i64_size(inputs)-1), 
                  list_i64_get(indices, list_i64_size(inputs)), 
                  list_i64_peek_back(inputs), 
@@ -100,7 +113,7 @@ static void dfs(char** program, list_i64* indices, list_i64* inputs, list_i64* m
     if (!is_part2) {
         for (int64_t new=9; new>=1; --new) {
             list_i64_push_back(inputs, new);
-            dfs(program, indices, inputs, max_z, iz, solution, is_part2);
+            dfs(program, cache, indices, inputs, max_z, iz, solution, is_part2);
             list_i64_pop_back(inputs);
             if (*solution != -1) {
                 return;
@@ -109,7 +122,7 @@ static void dfs(char** program, list_i64* indices, list_i64* inputs, list_i64* m
     } else {
         for (int64_t new=1; new<=9; ++new) {
             list_i64_push_back(inputs, new);
-            dfs(program, indices, inputs, max_z, iz, solution, is_part2);
+            dfs(program, cache, indices, inputs, max_z, iz, solution, is_part2);
             list_i64_pop_back(inputs);
             if (*solution != -1) {
                 return;
@@ -158,17 +171,19 @@ void calculate(char** program, uint64_t data_size, int64_t* part1, int64_t* part
     #pragma omp parallel num_threads(2)
     {
         list_i64* inputs = list_i64_init(10);
+        map_i64* cache = map_i64_init(10000);
 
         #pragma omp sections
         {
             #pragma omp section
-            dfs(program, indices, inputs, max_z, 0, part1, 0);
+            dfs(program, cache, indices, inputs, max_z, 0, part1, 0);
             
             #pragma omp section
-            dfs(program, indices, inputs, max_z, 0, part2, 1);
+            dfs(program, cache, indices, inputs, max_z, 0, part2, 1);
         }
 
         list_i64_free(inputs);
+        map_i64_free(cache);
     }
     
     list_i64_free(indices);
