@@ -171,7 +171,7 @@ void calculate(char** program, uint64_t data_size, int64_t* part1, int64_t* part
     #pragma omp parallel num_threads(2)
     {
         list_i64* inputs = list_i64_init(10);
-        map_i64* cache = map_i64_init(10000);
+        map_i64* cache = map_i64_init(100000);
 
         #pragma omp sections
         {
