@@ -96,7 +96,6 @@ void deque_i64_insert_after(deque_i64* ll, deque_i64_node* node, int64_t item) {
 }
 
 deque_i64_node* deque_i64_node_at(deque_i64* ll, uint64_t index) {
-    assert(index >= 0);
     assert(index < ll->size);
     uint64_t i;
     deque_i64_node* node;

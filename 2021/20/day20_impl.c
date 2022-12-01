@@ -30,7 +30,7 @@ static uint8_t** parse_grid(char** data, uint64_t data_size, uint64_t* n_rows, u
 }
 
 static inline uint64_t get_or_default(uint8_t** grid, uint64_t n_rows, uint64_t n_cols, uint64_t row, uint64_t col, uint8_t def) {
-    if (row < 0 || col < 0 || row >= n_rows || col >= n_cols) {
+    if (row >= n_rows || col >= n_cols) {
         return def;
     } else {
         return grid[row][col];
@@ -70,7 +70,7 @@ static int64_t count_after_n_iterations(uint8_t** grid, uint64_t n_rows, uint64_
             nextgrid[row] = calloc(next_cols, sizeof(uint8_t));
             for (uint64_t col=0; col<next_cols; ++col) {
                 lookup_id = map_pixel_to_lookup_id(oldgrid, rows, cols, row-1, col-1, def);
-                assert(lookup_id >= 0 && lookup_id < LOOKUP_SIZE);
+                assert(lookup_id < LOOKUP_SIZE);
                 nextgrid[row][col] = lookup[lookup_id];
             }
         }
