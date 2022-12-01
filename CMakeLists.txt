@@ -9,11 +9,17 @@ set(CMAKE_C_STANDARD 17)
 option(ASAN "Enable address sanitizer" OFF)
 
 add_compile_options(
-    -Wall 
+    -Wall
+    -Wextra
     -Werror 
     -Wpedantic
     -Wno-unused-function
+    -Wno-unused-parameter
+    -Wno-sign-compare
+    $<$<C_COMPILER_ID:GNU>:-Waggressive-loop-optimizations>
     -march=native
+    -mtune=native
+    -ffast-math
     -fopenmp
 )
 
@@ -27,10 +33,12 @@ if(ASAN)
     -fsanitize=address
     -fno-omit-frame-pointer
     $<$<C_COMPILER_ID:Clang>:-fsanitize-address-use-after-return=always>
+    $<$<C_COMPILER_ID:Clang>:-fsanitize=undefined>
     -fsanitize-address-use-after-scope
   )
   add_link_options(
     -fsanitize=address
+    $<$<C_COMPILER_ID:Clang>:-fsanitize=undefined>
   )
 endif(ASAN)
 
@@ -59,3 +67,4 @@ endfunction(add_unit_test)
 
 add_subdirectory(common/)
 add_subdirectory(2021)
+add_subdirectory(2022)

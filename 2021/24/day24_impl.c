@@ -8,14 +8,14 @@ static inline void parse_numbers(int64_t* mem, char* line, int64_t* n1, int64_t*
     if (*n1_start >= 'w' && *n1_start <= 'z') {
         *n1 = mem[*n1_start - 'w'];
         n2_start = &line[6];
+    
+        if (*n2_start >= 'w' && *n2_start <= 'z') {
+            *n2 = mem[*n2_start - 'w'];
+        } else {
+            *n2 = strtol(n2_start, NULL, 10);
+        }
     } else {
         *n1 = strtol(n1_start, &n2_start, 10);
-    }
-    
-    if (*n2_start >= 'w' && *n2_start <= 'z') {
-        *n2 = mem[*n2_start - 'w'];
-    } else {
-        *n2 = strtol(n2_start, NULL, 10);
     }
 }
 

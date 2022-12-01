@@ -1,7 +1,7 @@
 #include "conversions.h"
 
 list_i64* str_to_int64_list(const char* const data, const char delim) {
-    int64_t slen = strlen(data);
+    uint64_t slen = strlen(data);
     char* buffer = calloc(slen + 1, sizeof(char));
     
     list_i64* list = list_i64_init(slen);

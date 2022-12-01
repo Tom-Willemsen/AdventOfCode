@@ -23,7 +23,7 @@ static void list_i64_free(list_i64* list) {
     free(list);
 }
 
-static inline int64_t list_i64_size(list_i64* list) {
+static inline uint64_t list_i64_size(list_i64* list) {
     return list->size;
 }
 
@@ -175,9 +175,9 @@ static list_i64* list_i64_merge(list_i64* list1, list_i64* list2) {
 }
 
 static inline int compare_elements(const void * a, const void * b) {
-    if (*(int64_t*)a > *(int64_t*)b) {
+    if (*(const int64_t*)a > *(const int64_t*)b) {
         return 1;
-    } else if (*(int64_t*)a < *(int64_t*)b) {
+    } else if (*(const int64_t*)a < *(const int64_t*)b) {
         return -1;
     } else {
         return 0;
