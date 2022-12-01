@@ -1,4 +1,4 @@
-Solutions to https://adventofcode.com/2021
+Solutions to https://adventofcode.com/2021 and https://adventofcode.com/2022
 
 ### Requirements
 
