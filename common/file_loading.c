@@ -20,40 +20,28 @@ FILE* open_arg_as_file_or_exit(int argc, char** argv) {
 }
 
 char** load_file_as_str_arr(FILE* fptr, uint64_t *size) {
-    uint64_t l, lines = 1, linelength = 0, maxlinelength = 0;
-    int c;
-    char **data = NULL, *buffer;
+    uint64_t l = 0;
+    size_t linelength;
+    char **data = NULL;
+    char* buffer = NULL;
     
-    while ((c = fgetc(fptr)) != EOF)
-    {
-        linelength++;
-        if (c == '\n') {
-            lines++;
-            if (linelength > maxlinelength) {
-                maxlinelength = linelength;
-            }
-            linelength = 0;
+    while (getline(&buffer, &linelength, fptr) != -1){
+        if (data == NULL) {
+            data = calloc((l+1), sizeof(char*));
+        } else {
+            data = realloc(data, (l+1) * sizeof(char*));
         }
+        data[l] = calloc(linelength + 1, sizeof(char));
+        strcpy(data[l], buffer);
+        
+        free(buffer);
+        buffer = NULL;
+        l++;
     }
-    
-    if (linelength > maxlinelength) {
-        maxlinelength = linelength;  
-    }
-    
-    data = calloc(lines, sizeof(char*));
-    buffer = calloc(maxlinelength + 1, sizeof(char));
-    rewind(fptr);
-    
-    for(l=0; l<lines; ++l){
-        if (getline(&buffer, &maxlinelength, fptr) == -1) {
-            break;
-        }
-        data[l] = calloc(maxlinelength, sizeof(char));
-        strncpy(data[l], buffer, maxlinelength);
-    }
+
+    free(buffer);
     
     *size = l;
-    free(buffer);
     return data;
 }
 
@@ -94,11 +82,11 @@ uint8_t** load_dense_file_as_uint8_arr(FILE* fptr, uint64_t *y_size, uint64_t *x
             x=0;
             continue;
         }
-        if (c < 48 || c > 57 || y > lines || x > maxlinelength) {
+        if (c < '0' || c > '9' || y > lines || x > maxlinelength) {
             printf("file format error, c=%d, x=%"PRIu64", y=%"PRIu64", lines=%"PRIu64", maxlinelength=%"PRIu64"\n", c, x, y, lines, maxlinelength);
             exit(EXIT_FAILURE);
         }
-        data[y][x] = c - 48;
+        data[y][x] = c - '0';
         x++;
     }
     
@@ -111,7 +99,11 @@ void free_str_arr(char** const str_arr, const uint64_t size) {
     for (uint64_t i=0; i<size; ++i) {
         free(str_arr[i]);
     }
-    free(str_arr);
+    if (size > 0) {
+        free(str_arr);
+    } else {
+        assert(str_arr == NULL);
+    }
 }
 
 list_i64* load_file_as_list_i64(FILE* fptr) {

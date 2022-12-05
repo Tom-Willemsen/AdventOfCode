@@ -18,8 +18,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     assert(list_i64_size(elves) >= 3);
     
-    *part1 = list_i64_get(elves, list_i64_size(elves) - 1);
-    *part2 = list_i64_get(elves, list_i64_size(elves) - 1) + list_i64_get(elves, list_i64_size(elves) - 2) + list_i64_get(elves, list_i64_size(elves) - 3);
+    *part1 = list_i64_peek_back(elves);
+    *part2 = list_i64_peek_back(elves) + list_i64_get(elves, list_i64_size(elves) - 2) + list_i64_get(elves, list_i64_size(elves) - 3);
     
     list_i64_free(elves);
 }

@@ -14,7 +14,7 @@ char* testdata[6] = {
     "2-6,4-8\n"
 };
 
-void test_day_2 (void ** state) {
+void test_day_4 (void ** state) {
     int64_t part1 = 0;
     int64_t part2 = 0;
     calculate(testdata, 6, &part1, &part2);
@@ -26,7 +26,7 @@ int main (void)
 {
     const struct CMUnitTest tests [] =
     {
-        cmocka_unit_test (test_day_2),
+        cmocka_unit_test (test_day_4),
     };
     int count_fail_tests =
         cmocka_run_group_tests (tests, NULL, NULL);
