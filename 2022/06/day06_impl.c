@@ -1,6 +1,7 @@
 #include "day06_impl.h"
 
 int64_t find(char* data, uint64_t num) {
+    assert(strlen(data) > num);
     set_i64* set = set_i64_init(10);
     for (uint64_t i=num; i<strlen(data); ++i) {
         uint64_t all_added = 1;
