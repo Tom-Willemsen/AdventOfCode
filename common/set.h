@@ -58,6 +58,24 @@ static int64_t set_i64_add(set_i64* set, int64_t value) {
     return 0;
 }
 
+static uint64_t set_i64_size(set_i64* set) {
+    uint64_t result = 0;
+    for (uint64_t i=0; i<set->n_buckets; ++i) {
+        if (set->buckets[i] != NULL) {
+            result += list_i64_size(set->buckets[i]);
+        }
+    }
+    return result;
+}
+
+static void set_i64_clear(set_i64* set) {
+    for (uint64_t i=0; i<set->n_buckets; ++i) {
+        if (set->buckets[i] != NULL) {
+            list_i64_clear(set->buckets[i]);
+        }
+    }
+}
+
 static int64_t set_i64_contains(set_i64* set, int64_t value) {
     list_i64* bucket = set_i64_maybe_get_bucket(set, value);
     return bucket != NULL && list_i64_contains(bucket, value);

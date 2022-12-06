@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct list_i64 {
     uint64_t size;
@@ -159,19 +160,17 @@ static int64_t* list_i64_as_array(list_i64* list, uint64_t* array_size) {
 }
 
 static list_i64* list_i64_merge(list_i64* list1, list_i64* list2) {
-    if (list1->size > list2->size) {
-        for (uint64_t i=0; i<list2->size; ++i) {
-            list_i64_push_back(list1, list2->array[i]);
-        }
-        list_i64_free(list2);
-        return list1;
-    } else {
-        for (uint64_t i=0; i<list1->size; ++i) {
-            list_i64_push_back(list2, list1->array[i]);
-        }
-        list_i64_free(list1);
-        return list2;
+    uint64_t needed_capacity = list1->size + list2->size;
+    if (list1->capacity < needed_capacity) {
+        list1->array = realloc(list1->array, needed_capacity * sizeof(int64_t));
+        list1->capacity = needed_capacity;
     }
+    
+    memcpy(list1->array + list1->size, list2->array, list2->size * sizeof(int64_t));
+    list1->size += list2->size;
+    
+    list_i64_free(list2);
+    return list1;
 }
 
 static inline int compare_elements(const void * a, const void * b) {
