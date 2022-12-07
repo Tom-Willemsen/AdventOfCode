@@ -186,3 +186,22 @@ static inline int compare_elements(const void * a, const void * b) {
 static void list_i64_sort_inplace(list_i64* list) {
     qsort(list->array, list->size, sizeof(int64_t), compare_elements);
 }
+
+static list_i64* list_i64_copy(list_i64* list) {
+    list_i64* result = list_i64_init(list->size);
+    memcpy(result->array, list->array, list->size * sizeof(int64_t));
+    result->size = list->size;
+    return result;
+}
+
+static int64_t list_i64_equals(list_i64* list, list_i64* other) {
+    if (list->size != other->size) {
+        return 0;
+    }
+    for (uint64_t i=0; i<list->size; ++i) {
+        if (list_i64_get(list, i) != list_i64_get(other, i)) {
+            return 0;
+        }
+    }
+    return 1;
+}
