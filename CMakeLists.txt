@@ -4,7 +4,7 @@ project(advent_of_code LANGUAGES C)
 find_library(CMOCKA cmocka)
 find_package(OpenMP)
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 
 option(ASAN "Enable address sanitizer" OFF)
 

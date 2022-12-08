@@ -15,7 +15,7 @@ int64_t map_key(list_i64* list, uint64_t* used_keys, list_i64** map_keys) {
 
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) {
     int64_t size, key, value;
-    counter_i64* counter = counter_i64_init(50);
+    counter_i64* counter = counter_i64_init(10);
     
     uint64_t used_keys = 0;
     list_i64** map_keys = calloc(data_size, sizeof(list_i64*));
@@ -25,15 +25,15 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     int64_t root_map_key = map_key(path, &used_keys, map_keys);
     
-    list_i64* popped = list_i64_init(1);
-    
     for (uint64_t i = 0; i < data_size; ++i) {
         
         if (strlen(data[i]) > 0) {
             if (strncmp(data[i], "$ cd ..", 7) == 0) {
-                list_i64_pop_back(path);
-                while(list_i64_peek_back(path) != '/') {
-                    list_i64_pop_back(path);
+                for (int64_t i=list_i64_size(path)-2; i>=0; --i) {
+                    if (list_i64_get(path, i) == '/') {
+                        list_i64_inplace_slice(path, 0, i+1);
+                        break;
+                    }
                 }
             } else if (strncmp(data[i], "$ cd /", 6) == 0) {
                 list_i64_clear(path);
@@ -41,30 +41,26 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             } else if (strncmp(data[i], "$ ls", 4) == 0) {
                 // ignore
             } else if (strncmp(data[i], "$ cd ", 5) == 0) {
-                for (uint64_t j=5; j<strlen(data[i]); ++j) {
-                    if (data[i][j] != '\n') {
-                        list_i64_push_back(path, data[i][j]);
-                    }
+                for (uint64_t j=5; j<strlen(data[i])-1; ++j) {
+                    list_i64_push_back(path, data[i][j]);
                 }
                 list_i64_push_back(path, '/');
             } else if (strncmp(data[i], "dir ", 4) == 0) {
                 // ignore
             } else {
                 sscanf(data[i], "%"SCNd64" %*s", &size);
-                while (list_i64_size(path) > 0) {
-                    if (list_i64_peek_back(path) == '/') {
-                        counter_i64_incrementby(counter, map_key(path, &used_keys, map_keys), size);
+                
+                for (int64_t i=0; i<list_i64_size(path); ++i) {
+                    if (list_i64_get(path, i) == '/') {
+                        list_i64* temp = list_i64_copy_slice(path, 0, i+1);
+                        counter_i64_incrementby(counter, map_key(temp, &used_keys, map_keys), size);
+                        list_i64_free(temp);
                     }
-                    list_i64_push_back(popped, list_i64_pop_back(path));
-                }
-                while (list_i64_size(popped) > 0) {
-                    list_i64_push_back(path, list_i64_pop_back(popped));
                 }
             }
         }
     }
     
-    list_i64_free(popped);
     list_i64_free(path);
     
     counter_i64_iterator* iter = counter_i64_iter(counter);
