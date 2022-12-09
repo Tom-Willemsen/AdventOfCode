@@ -1,6 +1,9 @@
 #pragma once
 #include <inttypes.h>
 
+#define likely(x) __builtin_expect((x), 1)
+#define unlikely(x) __builtin_expect((x), 0)
+
 [[nodiscard]] static inline int64_t min(int64_t x, int64_t y) {
     if (x > y) {
         return y;

@@ -6,5 +6,6 @@
 #include "file_loading.h"
 #include "set_tuple2.h"
 #include "util.h"
+#include "bitset.h"
 
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2);
