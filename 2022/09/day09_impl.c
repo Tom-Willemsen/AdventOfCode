@@ -4,7 +4,6 @@ static const size_t NUM_KNOTS = 10;
 static const size_t HEAD = 0;
 static const size_t P1_TAIL = 1;
 static const size_t P2_TAIL = 9;
-static const int64_t GRID = 512;
 
 static void update_knots(int64_t* knots_x, int64_t* knots_y) {
     for (size_t k=1; k<NUM_KNOTS; ++k) {
@@ -27,11 +26,31 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     int64_t knots_x[NUM_KNOTS] = {0};
     int64_t knots_y[NUM_KNOTS] = {0};
     
-    bitset* bs1 = bitset_init(GRID*GRID);
-    bitset* bs2 = bitset_init(GRID*GRID);
+    int64_t min_x=0, min_y=0, max_x=0, max_y=0, x=0, y=0;
     
-    set_tuple_i64* s1 = set_tuple_i64_init(32);
-    set_tuple_i64* s2 = set_tuple_i64_init(32);
+    // Precompute needed grid size
+    for (uint64_t i = 0; i < data_size; ++i) {
+        sscanf(data[i], "%c %"SCNd64, &dir, &dist);
+        if (dir == 'U') {
+            y += dist;
+        } else if (dir == 'D') {
+            y -= dist;
+        } else if (dir == 'R') {
+            x += dist;
+        } else {
+            x -= dist;
+        }
+        min_x = min(min_x, x);
+        max_x = max(max_x, x);
+        min_y = min(min_y, y);
+        max_y = max(max_y, y);
+    }
+    
+    max_x++;
+    max_y++;
+    
+    bitset* bs1 = bitset_init(((max_x-min_x)*(max_y-min_y)+64)/64 * 64);  // need to request multiple of 64 bits
+    bitset* bs2 = bitset_init(((max_x-min_x)*(max_y-min_y)+64)/64 * 64);
     
     for (uint64_t i = 0; i < data_size; ++i) {
         sscanf(data[i], "%c %"SCNd64, &dir, &dist);
@@ -50,28 +69,14 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             } 
             update_knots(knots_x, knots_y);
             
-            // hybrid approach seems to give best performance - use a bitset to capture squares between (256, 256) and (-256, -256)
-            // a small number of points go outside this region, keep track of these using sets instead.
-            // this also keeps the approach general - the 'rope' can stray outside the bitset region without affecting correctness.
-            if (knots_x[P1_TAIL] >= (-GRID/2) && knots_x[P1_TAIL] < GRID/2 && knots_y[P1_TAIL] >= (-GRID/2) && knots_y[P1_TAIL] < GRID/2) {
-                bitset_set(bs1, (GRID/2+knots_x[P1_TAIL])*GRID + GRID/2 + knots_y[P1_TAIL]);
-            } else {
-                set_tuple_i64_add(s1, knots_x[P1_TAIL], knots_y[P1_TAIL]);
-            }
-            
-            if (knots_x[P2_TAIL] >= (-GRID/2) && knots_x[P2_TAIL] < GRID/2 && knots_y[P2_TAIL] >= (-GRID/2) && knots_y[P2_TAIL] < GRID/2) {
-                bitset_set(bs2, (GRID/2+knots_x[P2_TAIL])*GRID + GRID/2 + knots_y[P2_TAIL]);
-            } else {
-                set_tuple_i64_add(s2, knots_x[P2_TAIL], knots_y[P2_TAIL]);
-            }
+            bitset_set(bs1, (knots_x[P1_TAIL]-min_x)*(max_y-min_y) + knots_y[P1_TAIL] - min_y);
+            bitset_set(bs2, (knots_x[P2_TAIL]-min_x)*(max_y-min_y) + knots_y[P2_TAIL] - min_y);
         }
     }
     
-    *part1 = bitset_popcnt(bs1) + set_tuple_i64_size(s1);
-    *part2 = bitset_popcnt(bs2) + set_tuple_i64_size(s2);
+    *part1 = bitset_popcnt(bs1);
+    *part2 = bitset_popcnt(bs2);
 
-    set_tuple_i64_free(s2);
-    set_tuple_i64_free(s1);
     bitset_free(bs2);
     bitset_free(bs1);
 }
