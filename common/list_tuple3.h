@@ -77,7 +77,7 @@ static inline void list_tuple3_i64_remove(list_tuple3_i64* list, uint64_t index)
     list_i64_remove(list->z, index);
 }
 
-static int64_t list_tuple3_i64_indexof(list_tuple3_i64* list, int64_t x, int64_t y, int64_t z) {
+static int64_t list_tuple3_i64_last_indexof(list_tuple3_i64* list, int64_t x, int64_t y, int64_t z) {
     for (int64_t i=list_tuple3_i64_size(list) - 1; i>=0; --i) {
         if (list_i64_get(list->x, i) == x && list_i64_get(list->y, i) == y && list_i64_get(list->z, i) == z) {
             return i;
@@ -87,5 +87,5 @@ static int64_t list_tuple3_i64_indexof(list_tuple3_i64* list, int64_t x, int64_t
 } 
 
 static int64_t list_tuple3_i64_contains(list_tuple3_i64* list, int64_t x, int64_t y, int64_t z) {
-    return list_tuple3_i64_indexof(list, x, y, z) != -1;
+    return list_tuple3_i64_last_indexof(list, x, y, z) != -1;
 }

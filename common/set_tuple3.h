@@ -76,7 +76,7 @@ static int64_t set_tuple3_i64_remove(set_tuple3_i64* set, int64_t x, int64_t y, 
     if (bucket == NULL) {
         return 0;
     }
-    int64_t index = list_tuple3_i64_indexof(bucket, x, y, z);
+    int64_t index = list_tuple3_i64_last_indexof(bucket, x, y, z);
     if (index != -1) {
         list_tuple3_i64_remove(bucket, index);
         return 1;

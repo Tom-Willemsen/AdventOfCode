@@ -16,11 +16,14 @@
 } 
 
 [[nodiscard]] static inline int64_t i64abs(int64_t x) {
+    assert(x != INT64_MIN);
     if (x < 0) {
         return -x;
-    } else if (x == INT64_MIN) {
-        return INT64_MAX;
     } else {
         return x;
     }
+}
+
+[[nodiscard]] static inline int64_t i64sign(int64_t x) {
+    return (x>0) - (x<0);
 }

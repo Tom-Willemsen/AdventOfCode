@@ -16,6 +16,7 @@ add_compile_options(
     -Wno-unused-function
     -Wno-unused-parameter
     -Wno-sign-compare
+    -Wno-gnu-folding-constant
     $<$<C_COMPILER_ID:GNU>:-Waggressive-loop-optimizations>
     -march=native
     -mtune=native
