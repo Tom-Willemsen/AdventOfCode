@@ -28,9 +28,15 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     int64_t min_x=0, min_y=0, max_x=0, max_y=0, x=0, y=0;
     
+    char* dirs = calloc(data_size, sizeof(char));
+    int64_t* dists = calloc(data_size, sizeof(int64_t));
+    
     // Precompute needed grid size
     for (uint64_t i = 0; i < data_size; ++i) {
-        sscanf(data[i], "%c %"SCNd64, &dir, &dist);
+        dir = data[i][0];
+        dist = strtol(data[i]+2, NULL, 10);
+        dirs[i] = dir;
+        dists[i] = dist;
         if (dir == 'U') {
             y += dist;
         } else if (dir == 'D') {
@@ -53,9 +59,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     bitset* bs2 = bitset_init(((max_x-min_x)*(max_y-min_y)+64)/64 * 64);
     
     for (uint64_t i = 0; i < data_size; ++i) {
-        sscanf(data[i], "%c %"SCNd64, &dir, &dist);
-        assert(dist > 0);
-        assert(dir == 'U' || dir == 'D' || dir == 'R' || dir == 'L');
+        dir = dirs[i];
+        dist = dists[i];
         
         for (int64_t d=0; d<dist; ++d) {
             if (dir == 'U') {
