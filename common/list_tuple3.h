@@ -61,6 +61,14 @@ static inline void list_tuple3_i64_get(list_tuple3_i64* list, uint64_t index, in
     *z = list_i64_get(list->z, index);
 }
 
+static inline void list_tuple3_i64_set(list_tuple3_i64* list, uint64_t index, int64_t x, int64_t y, int64_t z) {
+    assert(list->x->size == list->y->size);
+    assert(list->y->size == list->z->size);
+    list_i64_set(list->x, index, x);
+    list_i64_set(list->y, index, y);
+    list_i64_set(list->z, index, z);
+}
+
 static inline void list_tuple3_i64_remove(list_tuple3_i64* list, uint64_t index) {
     assert(list->x->size == list->y->size);
     assert(list->y->size == list->z->size);
