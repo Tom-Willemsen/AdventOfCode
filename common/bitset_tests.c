@@ -16,20 +16,34 @@ void test_bitset (void ** state) {
     bitset_set(bs, 0);
     bitset_set(bs, 1);
     assert_int_equal(bitset_popcnt(bs), 2);
+    assert_int_equal(bitset_get(bs, 0), 1);
+    assert_int_equal(bitset_get(bs, 1), 1);
     
     bitset_set(bs, 127);
     assert_int_equal(bitset_popcnt(bs), 3);
     
     bitset_toggle(bs, 1);
     assert_int_equal(bitset_popcnt(bs), 2);
+    assert_int_equal(bitset_get(bs, 1), 0);
     
     bitset_toggle(bs, 2);
     assert_int_equal(bitset_popcnt(bs), 3);
+    assert_int_equal(bitset_get(bs, 2), 1);
     
     bitset_clear(bs, 2);
     assert_int_equal(bitset_popcnt(bs), 2);
+    assert_int_equal(bitset_get(bs, 2), 0);
     
     bitset_free(bs);
+}
+
+void test_bitset_alloc_size (void ** state) {
+    assert_int_equal(bitset_alloc_size(1), 1);
+    assert_int_equal(bitset_alloc_size(32), 1);
+    assert_int_equal(bitset_alloc_size(64), 1);
+    assert_int_equal(bitset_alloc_size(65), 2);
+    assert_int_equal(bitset_alloc_size(128), 2);
+    assert_int_equal(bitset_alloc_size(129), 3);
 }
 
 

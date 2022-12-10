@@ -55,8 +55,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     max_x++;
     max_y++;
     
-    bitset* bs1 = bitset_init(((max_x-min_x)*(max_y-min_y)+64)/64 * 64);  // need to request multiple of 64 bits
-    bitset* bs2 = bitset_init(((max_x-min_x)*(max_y-min_y)+64)/64 * 64);
+    bitset* bs1 = bitset_init((max_x-min_x)*(max_y-min_y));
+    bitset* bs2 = bitset_init((max_x-min_x)*(max_y-min_y));
     
     for (uint64_t i = 0; i < data_size; ++i) {
         dir = dirs[i];
