@@ -48,13 +48,16 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             } else if (strncmp(data[i], "dir ", 4) == 0) {
                 // ignore
             } else {
-                sscanf(data[i], "%"SCNd64" %*s", &size);
+                size = strtol(data[i], NULL, 10);
                 
                 for (int64_t i=0; i<list_i64_size(path); ++i) {
                     if (list_i64_get(path, i) == '/') {
-                        list_i64* temp = list_i64_copy_slice(path, 0, i+1);
-                        counter_i64_incrementby(counter, map_key(temp, &used_keys, map_keys), size);
-                        list_i64_free(temp);
+                        // avoid a copy by temporarily changing the "size" of the list without changing contents
+                        // - effectively works like a list view.
+                        uint64_t temp = path->size;
+                        path->size = i+1;
+                        counter_i64_incrementby(counter, map_key(path, &used_keys, map_keys), size);
+                        path->size = temp;
                     }
                 }
             }
