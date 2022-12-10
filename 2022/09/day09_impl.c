@@ -79,6 +79,9 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         }
     }
     
+    free(dists);
+    free(dirs);
+    
     *part1 = bitset_popcnt(bs1);
     *part2 = bitset_popcnt(bs2);
 
