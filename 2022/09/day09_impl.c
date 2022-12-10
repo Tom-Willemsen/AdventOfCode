@@ -1,9 +1,9 @@
 #include "day09_impl.h"
 
-static const size_t NUM_KNOTS = 10;
-static const size_t HEAD = 0;
-static const size_t P1_TAIL = 1;
-static const size_t P2_TAIL = 9;
+#define NUM_KNOTS 10
+#define HEAD 0
+#define P1_TAIL 1
+#define P2_TAIL 9
 
 static void update_knots(int64_t* knots_x, int64_t* knots_y) {
     for (size_t k=1; k<NUM_KNOTS; ++k) {

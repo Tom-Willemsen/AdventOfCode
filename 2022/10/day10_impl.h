@@ -6,8 +6,8 @@
 #include "file_loading.h"
 #include "util.h"
 
-static const size_t HEIGHT = 6;
-static const size_t WIDTH = 40;
-static const size_t SPRITE_WIDTH = 3;
+#define HEIGHT 6
+#define WIDTH 40
+#define SPRITE_WIDTH 3
 
 void calculate(char** data, uint64_t data_size, int64_t* part1, char* part2);
