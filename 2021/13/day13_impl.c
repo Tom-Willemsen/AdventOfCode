@@ -44,7 +44,7 @@ static list_tuple_i64* fold_along_y_axis(list_tuple_i64* dots, int64_t f, int64_
     return newdots;
 }
 
-void calculate(char** data, uint64_t data_size, int64_t* part1, char*** part2, int64_t* part2_y_size, int64_t* part2_x_size) {
+void calculate(char** data, uint64_t data_size, int64_t* part1, char** part2) {
     int64_t x, y, f, max_x= 0, max_y = 0, axis;
     char a;
     uint64_t i;
@@ -75,15 +75,24 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, char*** part2, i
         }
     }
     
-    *part2 = calloc(max_y+1, sizeof(char*));
-    *part2_x_size = max_x + 1;
-    *part2_y_size = max_y + 1;
+    size_t grid_x_size = max_x + 1;
+    size_t grid_y_size= max_y + 1;
+    char* grid = calloc(grid_x_size * grid_y_size, sizeof(char));
+    
     for (y=0; y<=max_y; ++y) {
-        (*part2)[y] = calloc(max_x+1, sizeof(char));
         for (x=0; x<=max_x; ++x) {
-            (*part2)[y][x] = list_tuple_i64_contains(dots, x, y) ? '#' : ' ';
+            grid[y*grid_x_size+x] = list_tuple_i64_contains(dots, x, y) ? '#' : ' ';
         }
     }
+    
+    *part2 = calloc(8+1, sizeof(char));
+    
+    if ((grid_x_size == 40 || grid_x_size == 39) && grid_y_size == 6) {
+        ocr_6x4_string(grid, *part2, 8, grid_x_size);
+    } else {
+        strcpy(*part2, "[notset]");
+    }
+    free(grid);
     
     list_tuple_i64_free(dots);
     list_tuple_i64_free(folds);

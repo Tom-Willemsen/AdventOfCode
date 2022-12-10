@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "file_loading.h"
+#include "ocr.h"
 #include "util.h"
 
 #define HEIGHT 6

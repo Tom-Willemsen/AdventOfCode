@@ -30,13 +30,12 @@ char* testdata_ex1[21] = {
 };
 
 void test_day_13 (void ** state) {
-    int64_t part1 = 0, part2_y_size = 0, part2_x_size = 0;
-    char** part2;
-    calculate(testdata_ex1, 21, &part1, &part2, &part2_y_size, &part2_x_size);
+    int64_t part1 = 0;
+    char* part2 = NULL;
+    calculate(testdata_ex1, 21, &part1, &part2);
     assert_int_equal(part1, 17);
-    assert_int_equal(part2_x_size, 5);
-    assert_int_equal(part2_y_size, 5);
-    free_str_arr(part2, part2_y_size);
+    assert_string_equal(part2, "[notset]");
+    free(part2);
 }
 
 int main (void)
