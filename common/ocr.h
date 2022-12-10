@@ -51,12 +51,26 @@ static const char* const ocr_6x4_G = " ## "
                                      "#  #"
                                      " ###";
 
+static const char* const ocr_6x4_H = "#  #"
+                                     "#  #"
+                                     "####"
+                                     "#  #"
+                                     "#  #"
+                                     "#  #";
+
 static const char* const ocr_6x4_J = "  ##"
                                      "   #"
                                      "   #"
                                      "   #"
                                      "#  #"
                                      " ## ";
+
+static const char* const ocr_6x4_K = "#  #"
+                                     "# # "
+                                     "##  "
+                                     "# # "
+                                     "# # "
+                                     "#  #";
 
 static const char* const ocr_6x4_L = "#   "
                                      "#   "
@@ -93,8 +107,12 @@ static char ocr_6x4_char(char* data) {
         return 'F';
     } else if (strncmp(data, ocr_6x4_G, 6*4) == 0) {
         return 'G';
+    } else if (strncmp(data, ocr_6x4_H, 6*4) == 0) {
+        return 'H';
     } else if (strncmp(data, ocr_6x4_J, 6*4) == 0) {
         return 'J';
+    } else if (strncmp(data, ocr_6x4_K, 6*4) == 0) {
+        return 'K';
     } else if (strncmp(data, ocr_6x4_L, 6*4) == 0) {
         return 'L';
     } else if (strncmp(data, ocr_6x4_R, 6*4) == 0) {
@@ -102,6 +120,13 @@ static char ocr_6x4_char(char* data) {
     } else if (strncmp(data, ocr_6x4_Z, 6*4) == 0) {
         return 'Z';
     } else {
+        printf("Unknown character in OCR:\n");
+        for (int64_t row=0; row<6; ++row) {
+            for (int64_t col=0; col<4; ++col) {
+                printf("%c", data[row*4+col]);
+            }
+            puts("");
+        }
         return '?';
     }
 }
