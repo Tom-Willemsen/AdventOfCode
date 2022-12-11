@@ -32,15 +32,6 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
             for (uint64_t i=0; i<list_size; ++i) {
                 int64_t item = list_i64_get(monkeys[m].items, i);
                 
-                if (monkeys[m].op == '+') {
-                    item += (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
-                } else {
-                    item *= (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
-                }
-                
-                if (part == 1) {
-                    item /= 3;
-                } 
                 if (item >= INT32_MAX) {
                     // Only do this modulo if item is starting to get too big.
                     // This saves ~3ms over always doing it.
@@ -51,6 +42,16 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                     // modulo algorithm saves a further ~1ms.
                     item = i64_modulo_mulinv(item, divisor, divisor_inverse);
                 }
+                
+                if (monkeys[m].op == '+') {
+                    item += (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
+                } else {
+                    item *= (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
+                }
+                
+                if (part == 1) {
+                    item /= 3;
+                } 
                 
                 // Using multiplicative-inverse here saves a *further* 2ms...
                 if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {
