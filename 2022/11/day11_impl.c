@@ -37,9 +37,14 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                 
                 if (part == 1) {
                     item /= 3;
+                } 
+                if (item >= INT32_MAX) {
+                    // Only do this modulo if item is starting to get too big.
+                    // This saves ~3ms over always doing it.
+                    // Need to start doing modulos after we pass 32-bits, as
+                    // item*item (where item is <32bits) is guaranteed not to overflow
+                    item %= divisor;
                 }
-                
-                item %= divisor;
                 
                 if (item % monkeys[m].test == 0) {
                     list_i64_push_back(monkeys[monkeys[m].to_true].items, item);
