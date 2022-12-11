@@ -25,10 +25,31 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
     
     double divisor_inverse = 1.0 / ((double) divisor);
     
+    __m128i simd_divisor = { divisor, divisor };
+    __m128d simd_inverse = _mm_set1_pd(divisor_inverse);
+    
     for (int64_t round=0; round<rounds; ++round) {
         for (uint64_t m=0; m<n_monkeys; ++m) {
             uint64_t list_size = list_i64_size(monkeys[m].items);
             inspected[m] += list_size;
+            
+            for (uint64_t i=0; i<list_size; i+=2) {
+                // ?!?! SIMD trickery
+                __m128i simd_vec = { monkeys[m].items->array[i], monkeys[m].items->array[i+1] };
+                __m128d dbls = { (double) monkeys[m].items->array[i], (double) monkeys[m].items->array[i+1] };
+                
+                __m128d mul = _mm_floor_pd(_mm_mul_pd(dbls, simd_inverse));
+                __m128i conv = simd_double_to_int64(mul);
+                
+                __m128i result = _mm_sub_epi64(simd_vec, _mm_mul_epu32(conv, simd_divisor));
+                
+                int64_t res[2];
+                _mm_storeu_si128((__m128i*) &res, result);
+                
+                monkeys[m].items->array[i] = res[0];
+                monkeys[m].items->array[i+1] = res[1];
+            }
+            
             for (uint64_t i=0; i<list_size; ++i) {
                 int64_t item = list_i64_get(monkeys[m].items, i);
                 
@@ -40,19 +61,9 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                 
                 if (part == 1) {
                     item /= 3;
-                } 
-                if (item >= INT32_MAX) {
-                    // Only do this modulo if item is starting to get too big.
-                    // This saves ~3ms over always doing it.
-                    // Need to start doing modulos after we pass 32-bits, as
-                    // item*item (where item is <32bits) is guaranteed not to overflow
-                    //
-                    // Precomputing inv_divisor outside the loop and using the multiplicative-inverse
-                    // modulo algorithm saves a further ~1ms.
-                    item = i64_modulo_mulinv(item, divisor, divisor_inverse);
                 }
                 
-                // Using multiplicative-inverse here saves a *further* 2ms...
+                // Using multiplicative-inverse here (again) saves a *further* 2ms...
                 if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {
                     list_i64_push_back(monkeys[monkeys[m].to_true].items, item);
                 } else {
@@ -61,6 +72,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
             }
             
             list_i64_clear(monkeys[m].items);
+
         }
     }
     

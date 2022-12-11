@@ -22,6 +22,7 @@ add_compile_options(
     -mtune=native
     -ffast-math
     -fopenmp
+    -mfpmath=sse 
 )
 
 add_link_options(
