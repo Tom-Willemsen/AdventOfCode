@@ -29,14 +29,15 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
         for (uint64_t m=0; m<n_monkeys; ++m) {
             uint64_t list_size = list_i64_size(monkeys[m].items);
             inspected[m] += list_size;
+
             for (uint64_t i=0; i<list_size; ++i) {
                 int64_t item = list_i64_get(monkeys[m].items, i);
                 
-                if (item >= INT32_MAX) {
+                if (item >= (1ULL<<26)) {
                     // Only do this modulo if item is starting to get too big.
                     // This saves ~3ms over always doing it.
-                    // Need to start doing modulos after we pass 32-bits, as
-                    // item*item (where item is <32bits) is guaranteed not to overflow
+                    // Need to start doing modulos after we pass 26-bits, as we use
+                    // doubles which have 52 bits of mantissa.
                     //
                     // Precomputing inv_divisor outside the loop and using the multiplicative-inverse
                     // modulo algorithm saves a further ~1ms.
@@ -51,7 +52,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                 
                 if (part == 1) {
                     item /= 3;
-                } 
+                }
                 
                 // Using multiplicative-inverse here saves a *further* 2ms...
                 if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {

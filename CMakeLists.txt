@@ -20,7 +20,6 @@ add_compile_options(
     $<$<C_COMPILER_ID:GNU>:-Waggressive-loop-optimizations>
     -march=native
     -mtune=native
-    -ffast-math
     -fopenmp
 )
 
