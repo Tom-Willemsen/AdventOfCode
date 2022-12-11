@@ -218,7 +218,7 @@ static void list_i64_inplace_slice(list_i64* list, int64_t start, int64_t end) {
 }
 
 [[nodiscard]] static list_i64* list_i64_copy(list_i64* list) {
-    list_i64* result = list_i64_init(list->size);
+    list_i64* result = list_i64_init(list->capacity);
     memcpy(result->array, list->array, list->size * sizeof(int64_t));
     result->size = list->size;
     return result;

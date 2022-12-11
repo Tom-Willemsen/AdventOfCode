@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "counter.h"
 #include "file_loading.h"
 #include "util.h"
 
