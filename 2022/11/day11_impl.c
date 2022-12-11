@@ -7,6 +7,7 @@ typedef struct monkey {
     int64_t number;
     int64_t op;
     int64_t test;
+    double test_inverse;
     int64_t to_true;
     int64_t to_false;
 } monkey;
@@ -21,6 +22,8 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
     }
     
     int64_t rounds = (part == 2) ? 10000 : 20;
+    
+    double divisor_inverse = 1.0 / ((double) divisor);
     
     for (int64_t round=0; round<rounds; ++round) {
         for (uint64_t m=0; m<n_monkeys; ++m) {
@@ -43,15 +46,20 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                     // This saves ~3ms over always doing it.
                     // Need to start doing modulos after we pass 32-bits, as
                     // item*item (where item is <32bits) is guaranteed not to overflow
-                    item %= divisor;
+                    //
+                    // Precomputing inv_divisor outside the loop and using the multiplicative-inverse
+                    // modulo algorithm saves a further ~1ms.
+                    item = i64_modulo_mulinv(item, divisor, divisor_inverse);
                 }
                 
-                if (item % monkeys[m].test == 0) {
+                // Using multiplicative-inverse here saves a *further* 2ms...
+                if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {
                     list_i64_push_back(monkeys[monkeys[m].to_true].items, item);
                 } else {
                     list_i64_push_back(monkeys[monkeys[m].to_false].items, item);
                 }
             }
+            
             list_i64_clear(monkeys[m].items);
         }
     }
@@ -95,6 +103,7 @@ static void parse(char** data, uint64_t data_size, uint64_t n_monkeys, monkey* m
             int64_t t = strtol(data[i] + strlen("  Test: divisible by "), NULL, 10);
             assert(t > 0);
             monkeys[m].test = t;
+            monkeys[m].test_inverse = 1.0/((double) t);
         } else if (strncmp(data[i], "    If true: throw to monkey ", strlen("    If true: throw to monkey ")) == 0) {
             int64_t to_monkey = strtol(data[i] + strlen("    If true: throw to monkey "), NULL, 10);
             assert(to_monkey >= 0);
