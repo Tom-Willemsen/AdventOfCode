@@ -14,65 +14,74 @@ typedef struct monkey {
 
 static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part) 
 {
-    int64_t divisor = 1;
+    int64_t p2_divisor = 1;
     int64_t* inspected = calloc(n_monkeys, sizeof(int64_t));
+    int64_t res[4];
+    int64_t cond[4];
     
     for (uint64_t m = 0; m < n_monkeys; ++m) {
-        divisor *= monkeys[m].test;
+        p2_divisor *= monkeys[m].test;
     }
     
     int64_t rounds = (part == 2) ? 10000 : 20;
     
-    double divisor_inverse = 1.0 / ((double) divisor);
+    __m256i simd_p2_divisor = _mm256_set1_epi64x(p2_divisor);
+    __m256d simd_p2_divisor_inverse = _mm256_set1_pd(((double) 1.0) / ((double) p2_divisor));
     
-    __m128i simd_divisor = { divisor, divisor };
-    __m128d simd_inverse = _mm_set1_pd(divisor_inverse);
+    // __m256i simd_p1_divisor = _mm256_set1_epi64x(3);
+    __m256d simd_p1_divisor_inverse = _mm256_set1_pd(((double) 1.0) / ((double) 3.0));
     
     for (int64_t round=0; round<rounds; ++round) {
         for (uint64_t m=0; m<n_monkeys; ++m) {
             uint64_t list_size = list_i64_size(monkeys[m].items);
             inspected[m] += list_size;
             
-            for (uint64_t i=0; i<list_size; i+=2) {
-                // ?!?! SIMD trickery
-                __m128i simd_vec = { monkeys[m].items->array[i], monkeys[m].items->array[i+1] };
-                __m128d dbls = { (double) monkeys[m].items->array[i], (double) monkeys[m].items->array[i+1] };
-                
-                __m128d mul = _mm_floor_pd(_mm_mul_pd(dbls, simd_inverse));
-                __m128i conv = simd_double_to_int64(mul);
-                
-                __m128i result = _mm_sub_epi64(simd_vec, _mm_mul_epu32(conv, simd_divisor));
-                
-                int64_t res[2];
-                _mm_storeu_si128((__m128i*) &res, result);
-                
-                monkeys[m].items->array[i] = res[0];
-                monkeys[m].items->array[i+1] = res[1];
-            }
+            __m256i monkey_test = _mm256_set1_epi64x(monkeys[m].test);
+            __m256d monkey_test_inverse = _mm256_set1_pd(monkeys[m].test_inverse);
             
-            for (uint64_t i=0; i<list_size; ++i) {
-                int64_t item = list_i64_get(monkeys[m].items, i);
+            for (uint64_t i=0; i<list_size; i+=4) {
+                __m256i result = { 
+                    monkeys[m].items->array[i], 
+                    monkeys[m].items->array[i+1],
+                    monkeys[m].items->array[i+2],
+                    monkeys[m].items->array[i+3],
+                };
+                __m256i simd_numbers = { 
+                    (monkeys[m].number == OLD_ITEM) ? monkeys[m].items->array[i]   : monkeys[m].number, 
+                    (monkeys[m].number == OLD_ITEM) ? monkeys[m].items->array[i+1] : monkeys[m].number,
+                    (monkeys[m].number == OLD_ITEM) ? monkeys[m].items->array[i+2] : monkeys[m].number,
+                    (monkeys[m].number == OLD_ITEM) ? monkeys[m].items->array[i+3] : monkeys[m].number,
+                };
                 
                 if (monkeys[m].op == '+') {
-                    item += (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
+                    result = _mm256_add_epi64(result, simd_numbers);
                 } else {
-                    item *= (monkeys[m].number == OLD_ITEM) ? item : monkeys[m].number;
+                    result = _mm256_mul_epu32(result, simd_numbers);
                 }
+                
                 
                 if (part == 1) {
-                    item /= 3;
+                    result = simd_double_to_int64_256(_mm256_floor_pd(_mm256_mul_pd(simd_int64_to_double_256(result), simd_p1_divisor_inverse)));
+                } else {
+                    result = simd_modulo_mulinv(result, simd_p2_divisor, simd_p2_divisor_inverse);
                 }
                 
-                // Using multiplicative-inverse here (again) saves a *further* 2ms...
-                if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {
-                    list_i64_push_back(monkeys[monkeys[m].to_true].items, item);
-                } else {
-                    list_i64_push_back(monkeys[monkeys[m].to_false].items, item);
+                _mm256_storeu_si256((__m256i*) res, result);
+                
+                __m256i conditions = simd_modulo_mulinv(result, monkey_test, monkey_test_inverse);
+                
+                _mm256_storeu_si256((__m256i*) cond, conditions);
+                            
+                for (int64_t j=0; j<4 && (i+j)<list_size; ++j) {
+                    if (cond[j] == 0) {
+                        list_i64_push_back(monkeys[monkeys[m].to_true].items, res[j]);
+                    } else {
+                        list_i64_push_back(monkeys[monkeys[m].to_false].items, res[j]);
+                    }
                 }
             }
             
             list_i64_clear(monkeys[m].items);
-
         }
     }
     
