@@ -25,13 +25,13 @@ static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t 
     
     // worst-case optimal path, visiting every single square.
     int64_t worst_cost = x_size * y_size;
-	*part1 = worst_cost;
-	*part2 = worst_cost;
+    *part1 = worst_cost;
+    *part2 = worst_cost;
     
     priorityQ_i64* openset = priorityQ_i64_init();
     priorityQ_i64_push_bbias(openset, 0, id_from_coord(x_size, y_size, start_x, start_y));
 
-    map_i64* knowncosts = map_i64_init(x_size * y_size);
+    map_i64* knowncosts = map_i64_init(0xFF);
     map_i64_set(knowncosts, id_from_coord(x_size, y_size, start_x, start_y), 0);
     
     
@@ -45,15 +45,13 @@ static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t 
         nx[3] = cx;    ny[3] = cy-1;
         
         currcost = map_i64_get(knowncosts, current, worst_cost);
-		
-		if (data[cy][cx] == 'a') {
-			*part2 = min(*part2, currcost);
-		}
-        
+
         if (data[cy][cx] == 'S') {
-			*part2 = min(*part2, currcost);
-			*part1 = currcost;
+            *part2 = min(*part2, currcost);
+            *part1 = currcost;
             break;
+        } else if (data[cy][cx] == 'a') {
+            *part2 = min(*part2, currcost);
         }
         
         for (uint64_t i=0; i<4; ++i) {
@@ -61,16 +59,16 @@ static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t 
                 && ny[i] < y_size 
                 && nx[i] >= 0 
                 && ny[i] >= 0
-				&& value_at(data, nx[i], ny[i]) >= value_at(data, cx, cy) - 1
+                && value_at(data, nx[i], ny[i]) >= value_at(data, cx, cy) - 1
             ) {
-				next = id_from_coord(x_size, y_size, nx[i], ny[i]);
-				cost = currcost + 1;
-				
-				if (cost < map_i64_get(knowncosts, next, worst_cost)) {
-					map_i64_set(knowncosts, next, cost);
-					priorityQ_i64_push_bbias(openset, cost, next);
-				}
-			}
+                next = id_from_coord(x_size, y_size, nx[i], ny[i]);
+                cost = currcost + 1;
+                
+                if (cost < map_i64_get(knowncosts, next, worst_cost)) {
+                    map_i64_set(knowncosts, next, cost);
+                    priorityQ_i64_push_bbias(openset, cost, next);
+                }
+            }
         }
     }
 
@@ -99,5 +97,5 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     assert(end_x != -1 && end_y != -1);
     
-	best_path_length(data, x_size, y_size, end_x, end_y, part1, part2);
+    best_path_length(data, x_size, y_size, end_x, end_y, part1, part2);
 }
