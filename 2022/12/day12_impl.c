@@ -24,17 +24,17 @@ static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64
     int64_t nx[4], ny[4];
     
     // worst-case optimal path, visiting every single square.
-    int64_t worst_cost = x_size * y_size;
+    int64_t worst_cost = min(x_size * y_size, break_cost);
     
-    sized_priorityQ_i64* openset = sized_priorityQ_i64_init(0, worst_cost);
-    sized_priorityQ_i64_push(openset, 0, id_from_coord(x_size, y_size, start_x, start_y));
+    priorityQ_i64* openset = priorityQ_i64_init();
+    priorityQ_i64_push_bbias(openset, 0, id_from_coord(x_size, y_size, start_x, start_y));
 
     map_i64* knowncosts = map_i64_init(x_size * y_size);
     map_i64_set(knowncosts, id_from_coord(x_size, y_size, start_x, start_y), 0);
     
     
-    while (sized_priorityQ_i64_size(openset) > 0) {
-        current = sized_priorityQ_i64_pop(openset);
+    while (priorityQ_i64_size(openset) > 0) {
+        current = priorityQ_i64_pop(openset);
         coord_from_id(current, x_size, y_size, &cx, &cy);
         
         nx[0] = cx+1;  ny[0] = cy;
@@ -61,7 +61,7 @@ static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64
                 
                 if (cost < map_i64_get(knowncosts, next, worst_cost)) {
                     map_i64_set(knowncosts, next, cost);
-                    sized_priorityQ_i64_push(openset, cost, next);
+                    priorityQ_i64_push_bbias(openset, cost, next);
                 }
             }
         }
@@ -69,7 +69,7 @@ static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64
     
     cost = map_i64_get(knowncosts, id_from_coord(x_size, y_size, end_x, end_y), worst_cost);
 
-    sized_priorityQ_i64_free(openset);
+    priorityQ_i64_free(openset);
     map_i64_free(knowncosts);
     
     return cost;
@@ -101,10 +101,16 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = best_path_length(data, x_size, y_size, p1_start_x, p1_start_y, end_x, end_y, 1000000);
     *part2 = *part1;
     
+    #pragma omp parallel for collapse(2)
     for (size_t y=0; y<y_size; ++y) {
         for (size_t x=0; x<x_size; ++x) {
             if (data[y][x] == 'a') {
-                *part2 = min(best_path_length(data, x_size, y_size, x, y, end_x, end_y, *part2), *part2);
+                int64_t path = best_path_length(data, x_size, y_size, x, y, end_x, end_y, *part2);
+                
+                #pragma omp critical
+                {
+                    *part2 = min(path, *part2);
+                }
             }
         }
     }
