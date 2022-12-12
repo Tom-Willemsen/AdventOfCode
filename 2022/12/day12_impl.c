@@ -19,12 +19,14 @@ static inline char value_at(char** data, size_t x, size_t y) {
     }
 }
 
-static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64_t start_x, int64_t start_y, char end, uint8_t part) {
+static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t start_x, int64_t start_y, int64_t* part1, int64_t* part2) {
     int64_t current, next, cx, cy, cost, currcost;
     int64_t nx[4], ny[4];
     
     // worst-case optimal path, visiting every single square.
     int64_t worst_cost = x_size * y_size;
+	*part1 = worst_cost;
+	*part2 = worst_cost;
     
     priorityQ_i64* openset = priorityQ_i64_init();
     priorityQ_i64_push_bbias(openset, 0, id_from_coord(x_size, y_size, start_x, start_y));
@@ -43,8 +45,14 @@ static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64
         nx[3] = cx;    ny[3] = cy-1;
         
         currcost = map_i64_get(knowncosts, current, worst_cost);
+		
+		if (data[cy][cx] == 'a') {
+			*part2 = min(*part2, currcost);
+		}
         
-        if (data[cy][cx] == end) {
+        if (data[cy][cx] == 'S') {
+			*part2 = min(*part2, currcost);
+			*part1 = currcost;
             break;
         }
         
@@ -53,33 +61,21 @@ static int64_t best_path_length(char** data, size_t x_size, size_t y_size, int64
                 && ny[i] < y_size 
                 && nx[i] >= 0 
                 && ny[i] >= 0
+				&& value_at(data, nx[i], ny[i]) >= value_at(data, cx, cy) - 1
             ) {
+				next = id_from_coord(x_size, y_size, nx[i], ny[i]);
+				cost = currcost + 1;
 				
-				uint8_t is_accessible;
-				if (part == 1) {
-					is_accessible = value_at(data, nx[i], ny[i]) <= value_at(data, cx, cy) + 1;
-				} else {
-					is_accessible = value_at(data, nx[i], ny[i]) >= value_at(data, cx, cy) - 1;
+				if (cost < map_i64_get(knowncosts, next, worst_cost)) {
+					map_i64_set(knowncosts, next, cost);
+					priorityQ_i64_push_bbias(openset, cost, next);
 				}
-				if (is_accessible) {
-					next = id_from_coord(x_size, y_size, nx[i], ny[i]);
-					cost = currcost + 1;
-					
-					if (cost < map_i64_get(knowncosts, next, worst_cost)) {
-						map_i64_set(knowncosts, next, cost);
-						priorityQ_i64_push_bbias(openset, cost, next);
-					}
-				}
-            }
+			}
         }
     }
-    
-    cost = map_i64_get(knowncosts, id_from_coord(x_size, y_size, cx, cy), worst_cost);
 
     priorityQ_i64_free(openset);
     map_i64_free(knowncosts);
-    
-    return cost;
 }
 
 static inline void find_char(char** data, size_t x_size, size_t y_size, int64_t* end_x, int64_t* end_y, char c) {
@@ -98,13 +94,10 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     size_t x_size = strlen(data[0]) - 1;
     size_t y_size = data_size;
     int64_t end_x = -1, end_y = -1;
-    int64_t start_x = -1, start_y = -1;
     
     find_char(data, x_size, y_size, &end_x, &end_y, 'E');
-    find_char(data, x_size, y_size, &start_x, &start_y, 'S');
     
-    assert(end_x != -1 && end_y != -1 && start_x != -1 && start_y != -1);
+    assert(end_x != -1 && end_y != -1);
     
-	*part1 = best_path_length(data, x_size, y_size, start_x, start_y, 'E', 1);
-	*part2 = best_path_length(data, x_size, y_size, end_x, end_y, 'a', 2);
+	best_path_length(data, x_size, y_size, end_x, end_y, part1, part2);
 }
