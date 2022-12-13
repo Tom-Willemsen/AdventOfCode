@@ -53,13 +53,13 @@ function(add_unit_test name source link)
     if (CMOCKA)
         add_executable(${name} ${source})
         target_link_libraries(${name} cmocka common ${link})
-        # add_custom_command(
-        #     TARGET ${name} 
-        #     POST_BUILD 
-        #     COMMAND ${name}
-        #     COMMENT "Tests for ${link} from ${source}"
-        # )
-        # add_custom_target(${name}.RUN_TESTS ${name} ALL)
+        add_custom_command(
+            TARGET ${name} 
+            POST_BUILD 
+            COMMAND ${name}
+            COMMENT "Tests for ${link} from ${source}"
+        )
+        add_custom_target(${name}.RUN_TESTS ${name} ALL)
     else()
         message(AUTHOR_WARNING "Skipping creating ${name} from ${source} as cmocka is not available")
     endif()

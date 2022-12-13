@@ -1,6 +1,6 @@
 #include "day13_impl.h"
 
-#define MAX_SUBPACKETS 16
+#define MAX_SUBPACKETS 8
 
 static const uint64_t TYPE_INTEGER = 0;
 static const uint64_t TYPE_SUBPACKET = 1;
@@ -16,10 +16,8 @@ typedef struct packet{
 
 static void free_packet(packet* packet) {
     if (packet->type == TYPE_SUBPACKET) {
-        for (size_t i=0; i<MAX_SUBPACKETS; ++i) {
-            if (packet->subpackets[i] != NULL) {
-                free_packet(packet->subpackets[i]);
-            }
+        for (size_t i=0; i<packet->size; ++i) {
+            free_packet(packet->subpackets[i]);
         }
         free(packet->subpackets);
     }
@@ -27,13 +25,17 @@ static void free_packet(packet* packet) {
 }
 
 static packet* make_packet_from_single_int(int64_t integer) {
+    packet* int_packet = calloc(1, sizeof(packet));
+    int_packet->type = TYPE_INTEGER;
+    int_packet->integer = integer;
+    int_packet->marker = 0;
+    
     packet* ret = calloc(1, sizeof(packet));
     ret->type = TYPE_SUBPACKET;
     ret->size = 1;
-    ret->subpackets = calloc(MAX_SUBPACKETS, sizeof(packet*));
-    ret->subpackets[0] = calloc(1, sizeof(packet));
-    ret->subpackets[0]->type = TYPE_INTEGER;
-    ret->subpackets[0]->integer = integer;
+    ret->marker = 0;
+    ret->subpackets = calloc(1, sizeof(packet*));
+    ret->subpackets[0] = int_packet;
     return ret;
 }
 
@@ -47,11 +49,7 @@ static int comparator(const packet* p1, const packet* p2) {
                 return comp;
             }
         }
-        if (p1->size < p2->size) {
-            return 1;
-        } else if (p1->size > p2->size) {
-            return -1;
-        }
+        return i64sign(p2->size - p1->size);
     } else if (p1->type == TYPE_INTEGER && p2->type == TYPE_SUBPACKET) {
         packet* temp = make_packet_from_single_int(p1->integer);
         int result = comparator(temp, p2);
@@ -67,7 +65,7 @@ static int comparator(const packet* p1, const packet* p2) {
 }
 
 static int qsort_comparator(const void* p1, const void* p2) {
-    return comparator((packet*) p1, (packet*) p2);
+    return 1 - comparator(*(const packet**) p1, *(const packet**) p2);
 }
 
 static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int64_t marker) {
@@ -87,13 +85,9 @@ static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int6
         p->type = TYPE_SUBPACKET;
         p->integer = INT64_MIN;
         p->subpackets = calloc(MAX_SUBPACKETS, sizeof(packet*));
-        for (size_t i=0; i<MAX_SUBPACKETS; ++i) {
-            p->subpackets[i] = NULL;
-        }
         p->size = 0;
         assert(data[offset] == '[');
         parsed = 1;
-        uint64_t n = 0;
         
         if (data[offset+parsed] != ']') {
             do {
@@ -101,17 +95,17 @@ static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int6
                 if (data[offset + parsed] == ',') {
                     parsed += 1;
                 }
-                assert(n < MAX_SUBPACKETS);
-                p->subpackets[n] = parse_packet(data, offset + parsed, &ps, marker);
+                assert(p->size <= MAX_SUBPACKETS);
+                p->subpackets[p->size] = parse_packet(data, offset + parsed, &ps, marker);
                 parsed += ps;
-                n++;
+                p->size++;
             } while (data[offset + parsed] == ',');
         }
-        p->size = n;
         assert(data[offset+parsed] == ']');
         parsed += 1;  // Trailing ']'
     } else {
         printf("unknown packet start in %s at offset %ld\n", data, offset + parsed);
+        abort();
     }
     (*parsed_size) += parsed;
 
@@ -121,10 +115,8 @@ static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int6
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) {
     packet** packets = calloc(data_size + 2, sizeof(packet*));
     
-    uint64_t marker1_idx = 0;
-    uint64_t marker2_idx = 0;
+    uint64_t pn = 0;
     
-    int64_t pn = 0;
     for (size_t i=0; i<data_size; ++i) {
         if (strlen(data[i]) > 1) {
             uint64_t parsed_size = 0;
@@ -134,34 +126,37 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         }
     }
     
-    for (uint64_t i=0; i<pn-1; i+=2) {
+    uint64_t p1_packets_size = pn;
+    uint64_t p2_packets_size = pn + 2;
+    
+    for (uint64_t i=0; i<p1_packets_size-1; i+=2) {
         if (comparator(packets[i], packets[i+1]) == 1) {
             *part1 += (i/2)+1;
         }
     }
     
-    size_t parsed_size;
+    size_t parsed_size = 0;
     packets[pn] = parse_packet("[[2]]", 0, &parsed_size, 1);
+    assert(parsed_size == 5);
+    parsed_size = 0;
     packets[pn+1] = parse_packet("[[6]]", 0, &parsed_size, 2);
+    assert(parsed_size == 5);
     
-    printf("%ld %ld\n", pn+1, pn+2);
+    qsort(packets, p2_packets_size, sizeof(packet*), qsort_comparator);
     
-    // qsort(packets, pn, sizeof(packet*), qsort_comparator);
-    
-    for (uint64_t i=0; i<pn+2; ++i) {
+    uint64_t marker1_idx = 0;
+    uint64_t marker2_idx = 0;
+    for (uint64_t i=0; i<p2_packets_size; ++i) {
         if (packets[i]->marker == 1) {
-            marker1_idx = pn;
+            marker1_idx = i;
         } else if (packets[i]->marker == 2) {
-            marker2_idx = pn;
+            marker2_idx = i;
         }
     }
-    
-    printf("%ld %ld\n", marker1_idx, marker2_idx);
-    
     *part2 = (marker1_idx + 1) * (marker2_idx + 1);
     
-    for (uint64_t i=0; i<data_size; ++i) {
-        free(packets[i]);
+    for (uint64_t i=0; i<p2_packets_size; ++i) {
+        free_packet(packets[i]);
     }
     free(packets);
 }
