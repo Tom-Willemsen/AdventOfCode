@@ -6,7 +6,6 @@ static const uint64_t TYPE_INTEGER = 0;
 static const uint64_t TYPE_SUBPACKET = 1;
 
 typedef struct packet{
-    int64_t marker;
     uint64_t type;
     int64_t integer;
     size_t size;
@@ -28,12 +27,10 @@ static packet* make_packet_from_single_int(int64_t integer) {
     packet* int_packet = calloc(1, sizeof(packet));
     int_packet->type = TYPE_INTEGER;
     int_packet->integer = integer;
-    int_packet->marker = 0;
     
     packet* ret = calloc(1, sizeof(packet));
     ret->type = TYPE_SUBPACKET;
     ret->size = 1;
-    ret->marker = 0;
     ret->subpackets = calloc(1, sizeof(packet*));
     ret->subpackets[0] = int_packet;
     return ret;
@@ -64,16 +61,11 @@ static int comparator(const packet* p1, const packet* p2) {
     return 0;
 }
 
-static int qsort_comparator(const void* p1, const void* p2) {
-    return 1 - comparator(*(const packet**) p1, *(const packet**) p2);
-}
-
-static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int64_t marker) {
+static packet* parse_packet(char* data, size_t offset, size_t* parsed_size) {
     size_t parsed = 0;
     char* endptr;
     
     packet* p = calloc(1, sizeof(packet));
-    p->marker = marker;
     
     if(data[offset] >= '0' && data[offset] <= '9') {
         p->type = TYPE_INTEGER;
@@ -96,7 +88,7 @@ static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int6
                     parsed += 1;
                 }
                 assert(p->size <= MAX_SUBPACKETS);
-                p->subpackets[p->size] = parse_packet(data, offset + parsed, &ps, marker);
+                p->subpackets[p->size] = parse_packet(data, offset + parsed, &ps);
                 parsed += ps;
                 p->size++;
             } while (data[offset + parsed] == ',');
@@ -113,49 +105,61 @@ static packet* parse_packet(char* data, size_t offset, size_t* parsed_size, int6
 }
 
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) {
-    packet** packets = calloc(data_size + 2, sizeof(packet*));
-    
-    uint64_t pn = 0;
+    uint64_t num_packets = 0, p = 0;
     
     for (size_t i=0; i<data_size; ++i) {
-        if (strlen(data[i]) > 1) {
-            uint64_t parsed_size = 0;
-            packets[pn] = parse_packet(data[i], 0, &parsed_size, 0);
-            assert(parsed_size == strlen(data[i]) - 1);
-            pn++;
+        if (data[i][0] == '[') {
+            num_packets++;
         }
     }
     
-    uint64_t p1_packets_size = pn;
-    uint64_t p2_packets_size = pn + 2;
+    assert(num_packets % 2 == 0 && num_packets > 0);
     
-    for (uint64_t i=0; i<p1_packets_size-1; i+=2) {
+    packet** packets = calloc(num_packets, sizeof(packet*));
+    
+    for (size_t i=0; i<data_size; ++i) {
+        if (data[i][0] == '[') {
+            uint64_t parsed_size = 0;
+            packets[p] = parse_packet(data[i], 0, &parsed_size);
+            assert(parsed_size == strlen(data[i]) - 1);
+            p++;
+        }
+    }
+    
+    for (size_t i=0; i<num_packets-1; i+=2) {
         if (comparator(packets[i], packets[i+1]) == 1) {
             *part1 += (i/2)+1;
         }
     }
     
     size_t parsed_size = 0;
-    packets[pn] = parse_packet("[[2]]", 0, &parsed_size, 1);
+    packet* marker1 = parse_packet("[[2]]", 0, &parsed_size);
     assert(parsed_size == 5);
     parsed_size = 0;
-    packets[pn+1] = parse_packet("[[6]]", 0, &parsed_size, 2);
+    packet* marker2 = parse_packet("[[6]]", 0, &parsed_size);
     assert(parsed_size == 5);
     
-    qsort(packets, p2_packets_size, sizeof(packet*), qsort_comparator);
-    
-    uint64_t marker1_idx = 0;
-    uint64_t marker2_idx = 0;
-    for (uint64_t i=0; i<p2_packets_size; ++i) {
-        if (packets[i]->marker == 1) {
-            marker1_idx = i;
-        } else if (packets[i]->marker == 2) {
-            marker2_idx = i;
+    int64_t p2_1=0, p2_2=0;
+    for (size_t i=0; i<num_packets; ++i) {
+        if (comparator(packets[i], marker1) == 1) {
+            p2_1++;
+        }
+        if (comparator(packets[i], marker2) == 1) {
+            p2_2++;
         }
     }
-    *part2 = (marker1_idx + 1) * (marker2_idx + 1);
     
-    for (uint64_t i=0; i<p2_packets_size; ++i) {
+    if (comparator(marker1, marker2) == -1) {
+        p2_1++;
+    } else {
+        p2_2++;
+    }
+    
+    *part2 = (p2_1 + 1) * (p2_2 + 1);
+    
+    free_packet(marker1);
+    free_packet(marker2);
+    for (size_t i=0; i<num_packets; ++i) {
         free_packet(packets[i]);
     }
     free(packets);
