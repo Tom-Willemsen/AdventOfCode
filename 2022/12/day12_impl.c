@@ -27,24 +27,24 @@ static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t 
     int64_t worst_cost = x_size * y_size;
     *part1 = worst_cost;
     *part2 = worst_cost;
+    assert(worst_cost < UINT32_MAX);
     
-    priorityQ_i64* openset = priorityQ_i64_init();
-    priorityQ_i64_push_bbias(openset, 0, id_from_coord(x_size, y_size, start_x, start_y));
+    deque_i64* openset = deque_i64_init();
+    deque_i64_push_front(openset, id_from_coord(x_size, y_size, start_x, start_y));
 
-    map_i64* knowncosts = map_i64_init(0xFF);
-    map_i64_set(knowncosts, id_from_coord(x_size, y_size, start_x, start_y), 0);
+    uint32_t* knowncosts = malloc(y_size * x_size * sizeof(uint32_t));
+    memset(knowncosts, 0xFF, y_size * x_size * sizeof(uint32_t));
+    knowncosts[start_y * x_size + start_x] = 0;
     
-    
-    while (priorityQ_i64_size(openset) > 0) {
-        current = priorityQ_i64_pop(openset);
+    while (openset->size > 0) {
+        current = deque_i64_pop_front(openset);
         coord_from_id(current, x_size, y_size, &cx, &cy);
+        currcost = knowncosts[cy * x_size + cx];
         
-        nx[0] = cx+1;  ny[0] = cy;
+        nx[0] = cx-1;  ny[0] = cy;
         nx[1] = cx;    ny[1] = cy+1;
-        nx[2] = cx-1;  ny[2] = cy;
-        nx[3] = cx;    ny[3] = cy-1;
-        
-        currcost = map_i64_get(knowncosts, current, worst_cost);
+        nx[2] = cx;    ny[2] = cy-1;
+        nx[3] = cx+1;  ny[3] = cy;
 
         if (data[cy][cx] == 'S') {
             *part2 = min(*part2, currcost);
@@ -64,16 +64,16 @@ static void best_path_length(char** data, size_t x_size, size_t y_size, int64_t 
                 next = id_from_coord(x_size, y_size, nx[i], ny[i]);
                 cost = currcost + 1;
                 
-                if (cost < map_i64_get(knowncosts, next, worst_cost)) {
-                    map_i64_set(knowncosts, next, cost);
-                    priorityQ_i64_push_bbias(openset, cost, next);
+                if (cost < knowncosts[ny[i] * x_size + nx[i]]) {
+                    knowncosts[ny[i] * x_size + nx[i]] = cost;
+                    deque_i64_push_back(openset, next);
                 }
             }
         }
     }
 
-    priorityQ_i64_free(openset);
-    map_i64_free(knowncosts);
+    deque_i64_free(openset);
+    free(knowncosts);
 }
 
 static inline void find_char(char** data, size_t x_size, size_t y_size, int64_t* end_x, int64_t* end_y, char c) {
