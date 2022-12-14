@@ -34,7 +34,7 @@ static int64_t simulate(set_tuple_i64* walls, int64_t min_x, int64_t max_x, int6
         max_visit_size = max(max_visit_size, list_tuple_i64_size(to_visit));
         list_tuple_i64_pop_back(to_visit, &x, &y);
         
-        if (x>=max_x || x <= min_x || y>=max_y) {
+        if (y>=max_y) {
             break;
         }
         
