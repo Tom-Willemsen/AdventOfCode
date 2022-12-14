@@ -22,6 +22,14 @@ static int64_t simulate(set_tuple_i64* walls, int64_t min_x, int64_t max_x, int6
     
     bitset* visited = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */);
     
+    bitset* walls_bs = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */);
+    
+    set_tuple_i64_iterator* iter = set_tuple_i64_iter(walls);
+    while (set_tuple_i64_next(iter, &x, &y)) {
+        bitset_set(walls_bs, map_index(x, y, min_x, max_x, min_y, max_y));
+    }
+    set_tuple_i64_iter_free(iter);
+    
     while (list_tuple_i64_size(to_visit)) {
         max_visit_size = max(max_visit_size, list_tuple_i64_size(to_visit));
         list_tuple_i64_pop_back(to_visit, &x, &y);
@@ -37,21 +45,22 @@ static int64_t simulate(set_tuple_i64* walls, int64_t min_x, int64_t max_x, int6
         
         bitset_set(visited, index);
         
-        if (y+1 <= max_y && x+1 && !(set_tuple_i64_contains(walls, x+1, y+1))) {
+        if (y+1 <= max_y && x+1 && !bitset_get(walls_bs, map_index(x+1, y+1, min_x, max_x, min_y, max_y))) {
             list_tuple_i64_push_back(to_visit, x+1, y+1);
         }
         
-        if (y+1 <= max_y && x-1 && !(set_tuple_i64_contains(walls, x-1, y+1))) {
+        if (y+1 <= max_y && x-1 && !bitset_get(walls_bs, map_index(x-1, y+1, min_x, max_x, min_y, max_y))) {
             list_tuple_i64_push_back(to_visit, x-1, y+1);
         }
         
-        if (y+1 <= max_y && !set_tuple_i64_contains(walls, x, y+1)) {
+        if (y+1 <= max_y && !bitset_get(walls_bs, map_index(x, y+1, min_x, max_x, min_y, max_y))) {
             list_tuple_i64_push_back(to_visit, x, y+1);
         }
     }
     
     result = bitset_popcnt(visited);
     bitset_free(visited);
+    bitset_free(walls_bs);
     list_tuple_i64_free(to_visit);
     
     if (part == 1) {
