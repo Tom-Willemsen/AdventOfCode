@@ -11,15 +11,16 @@ static inline size_t map_index(int64_t x, int64_t y, int64_t min_x, int64_t max_
     return (y-min_y)*(max_x-min_x) + (x-min_x);
 }
 
-int64_t simulate(uint8_t* data, int64_t min_x, int64_t max_x, int64_t min_y, int64_t max_y, int64_t part) {
+int64_t simulate(set_tuple_i64* walls, int64_t min_x, int64_t max_x, int64_t min_y, int64_t max_y, int64_t part) {
     int64_t x, y;
     int64_t created_sand = 0;
     uint8_t stop = 0;
+    set_tuple_i64* sand = set_tuple_i64_init(16384);
     while (1) {
         created_sand++;
         stop = 0;
         
-        if (data[map_index(SAND_START_X, SAND_START_Y, min_x, max_x, min_y, max_y)] == 's') {
+        if (set_tuple_i64_contains(sand, SAND_START_X, SAND_START_Y)) {
             break;
         }
         
@@ -31,23 +32,23 @@ int64_t simulate(uint8_t* data, int64_t min_x, int64_t max_x, int64_t min_y, int
                 stop = 1;
                 break;
             }
-            if (y+1 <= max_y && data[map_index(x, y+1, min_x, max_x, min_y, max_y)] == ' ') {
+            if (y+1 <= max_y && !(set_tuple_i64_contains(walls, x, y+1) || set_tuple_i64_contains(sand, x, y+1))) {
                 y++;
                 continue;
             }
-            if (y+1 <= max_y && x-1 >= min_x && data[map_index(x-1, y+1, min_x, max_x, min_y, max_y)] == ' ') {
+            if (y+1 <= max_y && !(set_tuple_i64_contains(walls, x-1, y+1) || set_tuple_i64_contains(sand, x-1, y+1))) {
                 y++;
                 x--;
                 continue;
             }
-            if (y+1 <= max_y && x+1 <= max_x && data[map_index(x+1, y+1, min_x, max_x, min_y, max_y)] == ' ') {
+            if (y+1 <= max_y && !(set_tuple_i64_contains(walls, x+1, y+1) || set_tuple_i64_contains(sand, x+1, y+1))) {
                 y++;
                 x++;
                 continue;
             }
 
             if (y >= min_y && y <= max_y && x >= min_x && x <= max_x) {
-                data[map_index(x, y, min_x, max_x, min_y, max_y)] = 's';
+                set_tuple_i64_add(sand, x, y);
                 break;
             } else {
                 assert(0);
@@ -59,6 +60,8 @@ int64_t simulate(uint8_t* data, int64_t min_x, int64_t max_x, int64_t min_y, int
             break;
         }
     }
+    printf("%f percent sand\n", (double) created_sand / (((double) max_x - (double) min_x)*((double) max_y - (double) min_y)));
+    set_tuple_i64_free(sand);
     return created_sand - 1;
 }
 
@@ -113,13 +116,13 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     int64_t min_x = INT64_MAX, min_y = INT64_MAX, max_x = INT64_MIN, max_y = INT64_MIN;
     int64_t x = 0, y = 0;
     
-    set_tuple_i64* points = set_tuple_i64_init(1024);
+    set_tuple_i64* walls = set_tuple_i64_init(1024);
     
     for (uint64_t i=0; i<data_size; ++i) {
-        parse_line(data[i], points);
+        parse_line(data[i], walls);
     }
     
-    set_tuple_i64_iterator* iter = set_tuple_i64_iter(points);
+    set_tuple_i64_iterator* iter = set_tuple_i64_iter(walls);
     while (set_tuple_i64_next(iter, &x, &y)) {
         min_x = min(x, min_x);
         max_x = max(x, max_x);
@@ -136,31 +139,13 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     max_x = max(max_x, SAND_START_X + (max_y - min_y));
     min_x = min(min_x, SAND_START_X - (max_y - min_y));
     
-    uint8_t* grid = malloc((max_x - min_x + 1) * (max_y - min_y + 1) * sizeof(uint8_t));
-    memset(grid, ' ', (max_x - min_x + 1) * (max_y - min_y + 1) * sizeof(uint8_t));
-    
-    iter = set_tuple_i64_iter(points);
-    while (set_tuple_i64_next(iter, &x, &y)) {
-        grid[map_index(x, y, min_x, max_x, min_y, max_y)] = '#';
-    }
-    set_tuple_i64_iter_free(iter);
-    set_tuple_i64_free(points);
-    
-    *part1 = simulate(grid, min_x, max_x, min_y, max_y, 1);
-    
-    for (y=min_y; y<=max_y; ++y) {
-        for (x=min_x; x<=max_x; ++x) {
-            if(grid[map_index(x, y, min_x, max_x, min_y, max_y)] == 's') {
-                grid[map_index(x, y, min_x, max_x, min_y, max_y)] = ' ';
-            }
-        }
-    }
+    *part1 = simulate(walls, min_x, max_x, min_y, max_y, 1);
     
     for (x=min_x; x<=max_x; ++x) {
-        grid[map_index(x, max_y, min_x, max_x, min_y, max_y)] = '#';
+        set_tuple_i64_add(walls, x, max_y);
     }
     
-    *part2 = simulate(grid, min_x, max_x, min_y, max_y, 2);
+    *part2 = simulate(walls, min_x, max_x, min_y, max_y, 2);
     
-    free(grid);
+    free(walls);
 }
