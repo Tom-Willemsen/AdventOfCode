@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "bitset.h"
 #include "file_loading.h"
 #include "list.h"
 #include "map.h"
