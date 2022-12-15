@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bitset.h"
+#include "rangeset.h"
 #include "file_loading.h"
 #include "list.h"
 #include "list_tuple3.h"
