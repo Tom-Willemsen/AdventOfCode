@@ -41,15 +41,27 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2, 
         max_x = max(sensor_x + distance, max_x);
     }
     
-    *part1 = 0;
-    for (int64_t x=min_x; x<=max_x; ++x) {
-        if (!is_undetected(x, param1, sensor_distances, INT64_MIN, INT64_MIN, INT64_MAX, INT64_MAX) 
-            && !set_tuple_i64_contains(beacons, x, param1)
-        ) {
-            (*part1)++;
+    bitset* bs = bitset_init(max_x - min_x + 1);
+    for (uint64_t i=0; i<list_tuple3_i64_size(sensor_distances); ++i) {
+        int64_t x, y, dist;
+        list_tuple3_i64_get(sensor_distances, i, &x, &y, &dist);
+        if (i64abs(y-param1) <= dist) {
+            for (int64_t j = x - (dist - i64abs(y-param1)); j<x + (dist - i64abs(y-param1))+1; ++j) {
+                bitset_set(bs, j-min_x);
+            }
         }
     }
     
+    set_tuple_i64_iterator* beacons_iter = set_tuple_i64_iter(beacons);
+    while (set_tuple_i64_next(beacons_iter, &x, &y)) {
+        if (y == param1) {
+            bitset_clear(bs, x - min_x);
+        }
+    }
+    
+    *part1 = bitset_popcnt(bs);
+    bitset_free(bs);
+    set_tuple_i64_iter_free(beacons_iter);
     set_tuple_i64_free(beacons);
     
     list_tuple_i64* line_segments = list_tuple_i64_init(256);
