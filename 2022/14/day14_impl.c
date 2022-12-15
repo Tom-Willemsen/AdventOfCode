@@ -20,9 +20,9 @@ static int64_t simulate(set_tuple_i64* walls, int64_t min_x, int64_t max_x, int6
     
     list_tuple_i64_push_back(to_visit, SAND_START_X, SAND_START_Y);
     
-    bitset* visited = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */);
+    bitset* visited = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */ + 1);
     
-    bitset* walls_bs = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */);
+    bitset* walls_bs = bitset_init(map_index(max_x, max_y, min_x, max_x, min_y, max_y) /* largest place we might try to index */ + 1);
     
     set_tuple_i64_iterator* iter = set_tuple_i64_iter(walls);
     while (set_tuple_i64_next(iter, &x, &y)) {
