@@ -53,7 +53,7 @@ static int64_t _rangeset_get_new_startpoint(rangeset* rs, int64_t start) {
 }
 
 static void rangeset_set(rangeset* rs, int64_t start, int64_t end) {
-    assert(start < end);
+    assert(start <= end);
     
     int64_t new_startpoint = _rangeset_get_new_startpoint(rs, start);
     int64_t new_endpoint = _rangeset_get_new_endpoint(rs, end);

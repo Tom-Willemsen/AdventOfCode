@@ -19,6 +19,8 @@ void test_set_independent_ranges (void ** state) {
     rangeset_set(rs, 20, 29);
     assert_int_equal(rangeset_popcnt(rs), 20);
     assert_int_equal(list_tuple_i64_size(rs->on_ranges), 3);
+    
+    rangeset_free(rs);
 }
 
 void test_set_contained_range (void ** state) {
@@ -32,6 +34,8 @@ void test_set_contained_range (void ** state) {
     rangeset_set(rs, 0, 24);
     assert_int_equal(rangeset_popcnt(rs), 25);
     assert_int_equal(list_tuple_i64_size(rs->on_ranges), 1);
+    
+    rangeset_free(rs);
 }
 
 void test_set_overlapping_range_end (void ** state) {
@@ -45,6 +49,8 @@ void test_set_overlapping_range_end (void ** state) {
     rangeset_set(rs, 5, 14);
     assert_int_equal(rangeset_popcnt(rs), 15);
     assert_int_equal(list_tuple_i64_size(rs->on_ranges), 1);
+    
+    rangeset_free(rs);
 }
 
 void test_set_overlapping_range_start (void ** state) {
@@ -58,6 +64,8 @@ void test_set_overlapping_range_start (void ** state) {
     rangeset_set(rs, 10, 19);
     assert_int_equal(rangeset_popcnt(rs), 15);
     assert_int_equal(list_tuple_i64_size(rs->on_ranges), 1);
+    
+    rangeset_free(rs);
 }
 
 void test_set_overlapping_range_both (void ** state) {
@@ -74,6 +82,8 @@ void test_set_overlapping_range_both (void ** state) {
     rangeset_set(rs, 10, 30);
     assert_int_equal(rangeset_popcnt(rs), 30);
     assert_int_equal(list_tuple_i64_size(rs->on_ranges), 1);
+    
+    rangeset_free(rs);
 }
 
 int main (void)

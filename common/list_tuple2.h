@@ -43,6 +43,12 @@ static inline void list_tuple_i64_pop_back(list_tuple_i64* list, int64_t* y, int
     *x = list_i64_pop_back(list->x);
 }
 
+static inline void list_tuple_i64_peek_back(list_tuple_i64* list, int64_t* y, int64_t* x) {
+    assert(list->x->size == list->y->size);
+    *y = list_i64_peek_back(list->y);
+    *x = list_i64_peek_back(list->x);
+}
+
 static inline void list_tuple_i64_get(list_tuple_i64* list, uint64_t index, int64_t* y, int64_t* x) {
     assert(list->x->size == list->y->size);
     *y = list_i64_get(list->y, index);
