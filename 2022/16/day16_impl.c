@@ -13,7 +13,7 @@ typedef struct valve {
 } valve;
 
 
-static uint64_t movement_cost_key(uint64_t num_valves, uint64_t id1, uint64_t id2) {
+static inline uint64_t movement_cost_key(uint64_t num_valves, uint64_t id1, uint64_t id2) {
     return id1*num_valves + id2;
 }
 
@@ -41,7 +41,7 @@ static inline int64_t valve_in_route(int64_t id, list_tuple_i64* route) {
 }
 
 
-static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_i64* good_valve_ids, map_i64* movement_costs, int64_t* best_score) {
+static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_i64* good_valve_ids, int64_t* movement_costs, int64_t* best_score) {
     int64_t ideal_remaining = 0;
     
     int64_t end_id, end_cost;
@@ -82,10 +82,9 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
             continue;
         }
         
-        int64_t cost = map_i64_get(movement_costs, movement_cost_key(num_valves, end_id, next), INT64_MAX);
-        if (cost == INT64_MAX) {
-            assert(0);
-        }
+        int64_t cost = movement_costs[movement_cost_key(num_valves, end_id, next)];
+        assert(cost != 0);
+        
         if (end_cost + cost < 30) {
             list_tuple_i64_push_back(route, next, end_cost + cost + 1);
             dfs(num_valves, valves, route, good_valve_ids, movement_costs, best_score);
@@ -135,13 +134,15 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         }
     }
     
-    map_i64* movement_costs = map_i64_init(256);
+    int64_t* movement_costs = calloc(movement_cost_key(data_size, data_size-1, data_size-1)+1, sizeof(int64_t));
     
+    // Build up a map of movement costs from any arbitrary node to any other arbitrary node.
+    // The paths are direct.
     for (uint64_t id1=0; id1<data_size; ++id1) {
         for (uint64_t id2=id1; id2<data_size; ++id2) {
             if (id1 == id2) {
-                map_i64_set(movement_costs, movement_cost_key(data_size, id1, id2), 0);
-                map_i64_set(movement_costs, movement_cost_key(data_size, id2, id1), 0);
+                movement_costs[movement_cost_key(data_size, id1, id2)] = 0;
+                movement_costs[movement_cost_key(data_size, id2, id1)] = 0;
             } else {
                 set_i64* visible = set_i64_init(data_size);
                 
@@ -161,8 +162,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
                     set_i64_iter_free(iter);
                     
                     if (set_i64_contains(new_connections, id2)) {
-                        map_i64_set(movement_costs, movement_cost_key(data_size, id1, id2), depth);
-                        map_i64_set(movement_costs, movement_cost_key(data_size, id2, id1), depth);
+                        movement_costs[movement_cost_key(data_size, id1, id2)] = depth;
+                        movement_costs[movement_cost_key(data_size, id2, id1)] = depth;
                         
                         set_i64_free(new_connections);
                         break;
@@ -181,8 +182,9 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         }
     }
     
+    // These are the only valve IDs we will consider for 
+    // next moves during the DFS.
     list_i64* good_valve_ids = list_i64_init(data_size);
-    list_i64_push_back(good_valve_ids, start_valve_id);
     for (uint64_t i=0; i<data_size; ++i) {
         if (valves[i].rate > 0) {
             list_i64_push_back(good_valve_ids, valves[i].id);
@@ -190,7 +192,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     }
     
     list_tuple_i64* route = list_tuple_i64_init(32);
-    list_tuple_i64_push_back(route, start_valve_id, 0);
+    list_tuple_i64_push_back(route, start_valve_id, 0);  // start at AA with cost 0
     
     dfs(data_size, valves, route, good_valve_ids, movement_costs, part1);
     
@@ -200,6 +202,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     }
     list_tuple_i64_free(route);
     list_i64_free(good_valve_ids);
-    map_i64_free(movement_costs);
+    free(movement_costs);
     free(valves);
 }
