@@ -24,7 +24,7 @@ void test_day_16_ex (void ** state) {
     int64_t part2 = 0;
     calculate(testdata, 10, &part1, &part2);
     assert_int_equal(part1, 1651);
-    assert_int_equal(part2, 0);
+    assert_int_equal(part2, 1707);
 }
 
 int main (void)
