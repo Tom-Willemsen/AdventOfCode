@@ -42,7 +42,7 @@ static int64_t calc_score2(uint64_t num_valves, valve* valves, list_tuple_i64* r
 
 
 static inline int64_t valve_in_route(int64_t id, list_tuple_i64* route) {
-    for (int64_t r=0; r<list_tuple_i64_size(route); ++r) {
+    for (int64_t r=list_tuple_i64_size(route)-1; r>=0; --r) {
         int64_t route_id, route_cost;
         list_tuple_i64_get(route, r, &route_id, &route_cost);
         if (route_id == id) {
@@ -75,7 +75,9 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     }
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
-        ideal_remaining += valves[list_i64_get(good_valve_ids, i)].rate * (30 - end_cost - 2);
+        int64_t gv_id = list_i64_get(good_valve_ids, i);
+        int64_t gv_cost = movement_costs[movement_cost_key(num_valves, end_id, gv_id)];
+        ideal_remaining += max(valves[list_i64_get(good_valve_ids, i)].rate * (30 - end_cost - gv_cost - 1), 0);
     }
     
     int64_t score = calc_score(num_valves, valves, route);
@@ -126,7 +128,12 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     }
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
-        ideal_remaining += valves[list_i64_get(good_valve_ids, i)].rate * (26 - min(end1_cost, end2_cost) - 2);
+        int64_t gv_id = list_i64_get(good_valve_ids, i);
+        int64_t ideal_score = max(max(
+            valves[gv_id].rate * (26 - end1_cost - movement_costs[movement_cost_key(num_valves, end1_id, gv_id)] -1), 
+            valves[gv_id].rate * (26 - end2_cost - movement_costs[movement_cost_key(num_valves, end2_id, gv_id)] -1)
+        ), 0);
+        ideal_remaining += ideal_score;
     }
     
     int64_t score = calc_score2(num_valves, valves, route1, route2);
@@ -286,6 +293,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     dfs(data_size, valves, route, good_valve_ids, movement_costs, part1);
     list_tuple_i64_free(route);
     
+    #ifndef DISABLE_2022_16_P2
     // part 2
     list_tuple_i64* route1 = list_tuple_i64_init(32);
     list_tuple_i64* route2 = list_tuple_i64_init(32);
@@ -294,6 +302,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     dfs2(data_size, valves, route1, route2, good_valve_ids, movement_costs, part2);
     list_tuple_i64_free(route1);
     list_tuple_i64_free(route2);
+    #endif
     
     for (uint64_t i=0; i<data_size; ++i) {
         list_tuple_i64_free(valves[i].connections_by_name);

@@ -7,6 +7,7 @@ find_package(OpenMP)
 set(CMAKE_C_STANDARD 23)
 
 option(ASAN "Enable address sanitizer" OFF)
+option(DISABLE_2022_16_P2 "Enable 2022 day 16 part 2 (slow)" OFF)
 
 add_compile_options(
     -Wall
@@ -41,6 +42,11 @@ if(ASAN)
     $<$<C_COMPILER_ID:Clang>:-fsanitize=undefined>
   )
 endif(ASAN)
+
+
+if(DISABLE_2022_16_P2)
+  add_compile_definitions(DISABLE_2022_16_P2)
+endif(DISABLE_2022_16_P2)
 
 
 include(CheckIPOSupported)
