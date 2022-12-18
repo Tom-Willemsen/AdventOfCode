@@ -59,15 +59,8 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     int64_t end_id, end_cost;
     list_tuple_i64_peek_back(route, &end_id, &end_cost);
     
-    uint64_t all_open = 1;
-    
-    for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
-        int64_t valve_id = list_i64_get(good_valve_ids, i);
-        if (!valve_in_route(valve_id, route)) {
-            all_open = 0;
-            break;
-        }
-    }
+    // -1 because initial "AA" valve is in route
+    uint64_t all_open = list_tuple_i64_size(route) - 1 >= list_i64_size(good_valve_ids);
     
     if (all_open) {
         *best_score = max(calc_score(num_valves, valves, route), *best_score);
@@ -76,8 +69,11 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(good_valve_ids, i);
+        if (valve_in_route(gv_id, route)) {
+            continue;
+        }
         int64_t gv_cost = movement_costs[movement_cost_key(num_valves, end_id, gv_id)];
-        ideal_remaining += max(valves[list_i64_get(good_valve_ids, i)].rate * (30 - end_cost - gv_cost - 2), 0);
+        ideal_remaining += max(valves[list_i64_get(good_valve_ids, i)].rate * (30 - end_cost - gv_cost - 1), 0);
     }
     
     int64_t score = calc_score(num_valves, valves, route);
@@ -107,20 +103,13 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
 
 static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, list_tuple_i64* route2, list_i64* good_valve_ids, int64_t* movement_costs, int64_t* best_score) {
     int64_t ideal_remaining = 0;
-    
     int64_t end1_id, end1_cost, end2_id, end2_cost;
+    
     list_tuple_i64_peek_back(route1, &end1_id, &end1_cost);
     list_tuple_i64_peek_back(route2, &end2_id, &end2_cost);
     
-    uint64_t all_open = 1;
-    
-    for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
-        int64_t valve_id = list_i64_get(good_valve_ids, i);
-        if (!valve_in_route(valve_id, route1) && !valve_in_route(valve_id, route2)) {
-            all_open = 0;
-            break;
-        }
-    }
+    // -1's are because the initial "AA" node is in the route.
+    uint64_t all_open = (list_tuple_i64_size(route1) - 1 + list_tuple_i64_size(route2) - 1) >= list_i64_size(good_valve_ids);
     
     if (all_open) {
         *best_score = max(calc_score2(num_valves, valves, route1, route2), *best_score);
@@ -129,9 +118,12 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(good_valve_ids, i);
+        if (valve_in_route(gv_id, route1) || valve_in_route(gv_id, route2)) {
+            continue;
+        }
         int64_t ideal_score = max(max(
-            valves[gv_id].rate * (26 - end1_cost - movement_costs[movement_cost_key(num_valves, end1_id, gv_id)] - 2), 
-            valves[gv_id].rate * (26 - end2_cost - movement_costs[movement_cost_key(num_valves, end2_id, gv_id)] - 2)
+            valves[gv_id].rate * (26 - end1_cost - movement_costs[movement_cost_key(num_valves, end1_id, gv_id)] - 1), 
+            valves[gv_id].rate * (26 - end2_cost - movement_costs[movement_cost_key(num_valves, end2_id, gv_id)] - 1)
         ), 0);
         ideal_remaining += ideal_score;
     }
