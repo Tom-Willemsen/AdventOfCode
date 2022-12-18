@@ -161,7 +161,7 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
             second_cost = end2_cost + cost2 + 1;
         }
 
-        if (first_cost <= 26) {
+        if (first_cost < 26) {
             list_tuple_i64_push_back(first, next, first_cost);
             dfs2(num_valves, valves, route1, route2, good_valve_ids, movement_costs, best_score);
             int64_t ig1, ig2;
@@ -170,7 +170,7 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
         
         // Extra condition checking list size > 1 - both routes start at the 'AA' node, it's useless to check an
         // exact transposition. So exclude the case where we're looking at 'AA' only.
-        if (list_tuple_i64_size(second) > 1 && second_cost <= 26) {
+        if (list_tuple_i64_size(second) > 1 && second_cost < 26) {
             list_tuple_i64_push_back(second, next, second_cost);
             dfs2(num_valves, valves, route1, route2, good_valve_ids, movement_costs, best_score);
             int64_t ig1, ig2;
