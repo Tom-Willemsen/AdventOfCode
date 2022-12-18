@@ -47,19 +47,27 @@ static void list_i64_push_front(list_i64* list, int64_t item) {
     if (list->size + 1 > list->capacity) {
         list_i64_resize(list);
     }
-    for (uint64_t i=list->size; i>0; --i) {
-        list->array[i] = list->array[i-1];
-    }
+    memmove(list->array + 1, list->array, list->size * sizeof(int64_t));
+    
     list->array[0] = item;
+    list->size++;
+}
+
+static void list_i64_insert(list_i64* list, uint64_t index, int64_t item) {
+    assert(index <= list->size);
+    if (list->size + 1 > list->capacity) {
+        list_i64_resize(list);
+    }
+    memmove(list->array + 1 + index, list->array + index, (list->size - index) * sizeof(int64_t));
+    
+    list->array[index] = item;
     list->size++;
 }
 
 static void list_i64_remove(list_i64* list, uint64_t index) {
     assert(list->size > 0);
     assert(index < list->size);
-    for (uint64_t i=index; i<list->size-1; ++i) {
-        list->array[i] = list->array[i+1];
-    }
+    memmove(list->array + index, list->array + index + 1, (list->size - index - 1) * sizeof(int64_t));
     list->size--;
 }
 

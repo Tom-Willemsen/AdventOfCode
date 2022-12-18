@@ -41,26 +41,14 @@ static int64_t calc_score2(uint64_t num_valves, valve* valves, list_tuple_i64* r
 }
 
 
-static inline int64_t valve_in_route(int64_t id, list_tuple_i64* route) {
-    int64_t route_id, route_cost;
-    for (int64_t r=list_tuple_i64_size(route)-1; r>=0; --r) {
-        list_tuple_i64_get(route, r, &route_id, &route_cost);
-        if (route_id == id) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-
-static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_i64* good_valve_ids, int64_t* movement_costs, int64_t* best_score) {
+static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_i64* good_valve_ids, int64_t total_valves_to_open, int64_t* movement_costs, int64_t* best_score) {
     int64_t ideal_remaining = 0;
     
     int64_t end_id, end_cost;
     list_tuple_i64_peek_back(route, &end_id, &end_cost);
     
     // -1 because initial "AA" valve is in route
-    uint64_t all_open = list_tuple_i64_size(route) - 1 >= list_i64_size(good_valve_ids);
+    uint64_t all_open = list_tuple_i64_size(route) - 1 >= total_valves_to_open;
     
     if (all_open) {
         *best_score = max(calc_score(num_valves, valves, route), *best_score);
@@ -69,9 +57,6 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(good_valve_ids, i);
-        if (valve_in_route(gv_id, route)) {
-            continue;
-        }
         int64_t gv_cost = movement_costs[movement_cost_key(num_valves, end_id, gv_id)];
         ideal_remaining += max(valves[list_i64_get(good_valve_ids, i)].rate * (30 - end_cost - gv_cost - 1), 0);
     }
@@ -84,16 +69,18 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t next = list_i64_get(good_valve_ids, i);
-        if (valve_in_route(next, route)) {
-            continue;
-        }
-        
         int64_t cost = movement_costs[movement_cost_key(num_valves, end_id, next)];
         assert(cost != 0);
         
         if (end_cost + cost < 30) {
             list_tuple_i64_push_back(route, next, end_cost + cost + 1);
-            dfs(num_valves, valves, route, good_valve_ids, movement_costs, best_score);
+            
+            list_i64_remove(good_valve_ids, i);
+            
+            dfs(num_valves, valves, route, good_valve_ids, total_valves_to_open, movement_costs, best_score);
+            
+            list_i64_insert(good_valve_ids, i, next);
+            
             int64_t ig1, ig2;
             list_tuple_i64_pop_back(route, &ig1, &ig2);
         }
@@ -101,7 +88,7 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
 }
 
 
-static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, list_tuple_i64* route2, list_i64* good_valve_ids, int64_t* movement_costs, int64_t* best_score) {
+static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, list_tuple_i64* route2, list_i64* good_valve_ids, int64_t total_valves_to_open, int64_t* movement_costs, int64_t* best_score) {
     int64_t ideal_remaining = 0;
     int64_t end1_id, end1_cost, end2_id, end2_cost;
     
@@ -109,7 +96,7 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     list_tuple_i64_peek_back(route2, &end2_id, &end2_cost);
     
     // -1's are because the initial "AA" node is in the route.
-    uint64_t all_open = (list_tuple_i64_size(route1) - 1 + list_tuple_i64_size(route2) - 1) >= list_i64_size(good_valve_ids);
+    uint64_t all_open = (list_tuple_i64_size(route1) - 1 + list_tuple_i64_size(route2) - 1) >= total_valves_to_open;
     
     if (all_open) {
         *best_score = max(calc_score2(num_valves, valves, route1, route2), *best_score);
@@ -118,9 +105,6 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(good_valve_ids, i);
-        if (valve_in_route(gv_id, route1) || valve_in_route(gv_id, route2)) {
-            continue;
-        }
         int64_t ideal_score = max(max(
             valves[gv_id].rate * (26 - end1_cost - movement_costs[movement_cost_key(num_valves, end1_id, gv_id)] - 1), 
             valves[gv_id].rate * (26 - end2_cost - movement_costs[movement_cost_key(num_valves, end2_id, gv_id)] - 1)
@@ -136,10 +120,6 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     
     for (uint64_t i=0; i<list_i64_size(good_valve_ids); ++i) {
         int64_t next = list_i64_get(good_valve_ids, i);
-        
-        if (valve_in_route(next, route1) || valve_in_route(next, route2)) {
-            continue;
-        }
         
         int64_t cost1 = movement_costs[movement_cost_key(num_valves, end1_id, next)];
         int64_t cost2 = movement_costs[movement_cost_key(num_valves, end2_id, next)];
@@ -163,7 +143,13 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
 
         if (first_cost < 26) {
             list_tuple_i64_push_back(first, next, first_cost);
-            dfs2(num_valves, valves, route1, route2, good_valve_ids, movement_costs, best_score);
+            
+            list_i64_remove(good_valve_ids, i);
+            
+            dfs2(num_valves, valves, route1, route2, good_valve_ids, total_valves_to_open, movement_costs, best_score);
+            
+            list_i64_insert(good_valve_ids, i, next);
+            
             int64_t ig1, ig2;
             list_tuple_i64_pop_back(first, &ig1, &ig2);
         }
@@ -172,7 +158,13 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
         // exact transposition. So exclude the case where we're looking at 'AA' only.
         if (list_tuple_i64_size(second) > 1 && second_cost < 26) {
             list_tuple_i64_push_back(second, next, second_cost);
-            dfs2(num_valves, valves, route1, route2, good_valve_ids, movement_costs, best_score);
+            
+            list_i64_remove(good_valve_ids, i);
+            
+            dfs2(num_valves, valves, route1, route2, good_valve_ids, total_valves_to_open, movement_costs, best_score);
+            
+            list_i64_insert(good_valve_ids, i, next);
+            
             int64_t ig1, ig2;
             list_tuple_i64_pop_back(second, &ig1, &ig2);
         }
@@ -282,7 +274,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     // part 1
     list_tuple_i64* route = list_tuple_i64_init(32);
     list_tuple_i64_push_back(route, start_valve_id, 0);  // start at AA with cost 0
-    dfs(data_size, valves, route, good_valve_ids, movement_costs, part1);
+    dfs(data_size, valves, route, good_valve_ids, list_i64_size(good_valve_ids), movement_costs, part1);
     list_tuple_i64_free(route);
     
     #ifndef DISABLE_2022_16_P2
@@ -291,7 +283,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     list_tuple_i64* route2 = list_tuple_i64_init(32);
     list_tuple_i64_push_back(route1, start_valve_id, 0);  // start at AA with cost 0
     list_tuple_i64_push_back(route2, start_valve_id, 0);  // start at AA with cost 0
-    dfs2(data_size, valves, route1, route2, good_valve_ids, movement_costs, part2);
+    dfs2(data_size, valves, route1, route2, good_valve_ids, list_i64_size(good_valve_ids), movement_costs, part2);
     list_tuple_i64_free(route1);
     list_tuple_i64_free(route2);
     #endif
