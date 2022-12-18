@@ -48,6 +48,18 @@ static inline void bitset_toggle(bitset* bs, size_t index) {
     bs->data[index/64] ^= (1ULL << (index % 64));
 }
 
+[[nodiscard]] static uint64_t bitset_equals(bitset* bs1, bitset* bs2) {
+    if (bs1->size != bs2->size) {
+        return 0;
+    }
+    for (uint64_t i=0; i<bitset_alloc_size(bs1->size); ++i) {
+        if (bs1->data[i] != bs2->data[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 [[nodiscard]] static inline uint64_t bitset_popcnt(bitset* bs) {
     uint64_t result = 0;
     for (uint64_t i=0; i<bitset_alloc_size(bs->size); ++i) {
