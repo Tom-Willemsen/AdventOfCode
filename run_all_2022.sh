@@ -1,6 +1,6 @@
 BUILD_TYPE="$(grep -oE 'CMAKE_BUILD_TYPE:STRING=[a-zA-Z]+' build/CMakeCache.txt)"
 
-if [ $BUILD_TYPE = "CMAKE_BUILD_TYPE:STRING=Release" ]
+if [ "$BUILD_TYPE" = "CMAKE_BUILD_TYPE:STRING=Release" ]
 then
     HYPERFINE_RUN_ARGS="--warmup=10 --runs 100"
 else
