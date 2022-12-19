@@ -43,14 +43,14 @@ static int64_t calc_score2(uint64_t num_valves, valve* valves, list_tuple_i64* r
 
 static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_i64* unopened_valve_ids, int64_t* movement_costs, int64_t* best_score) {
     int64_t ideal_remaining = 0;
-    
     int64_t end_id, end_cost;
-    list_tuple_i64_peek_back(route, &end_id, &end_cost);
     
     if (list_i64_size(unopened_valve_ids) == 0) {
         *best_score = max(calc_score(num_valves, valves, route), *best_score);
         return;
     }
+    
+    list_tuple_i64_peek_back(route, &end_id, &end_cost);
     
     for (uint64_t i=0; i<list_i64_size(unopened_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(unopened_valve_ids, i);
@@ -67,19 +67,15 @@ static void dfs(uint64_t num_valves, valve* valves, list_tuple_i64* route, list_
     for (uint64_t i=0; i<list_i64_size(unopened_valve_ids); ++i) {
         int64_t next = list_i64_get(unopened_valve_ids, i);
         int64_t cost = movement_costs[movement_cost_key(num_valves, end_id, next)];
-        assert(cost != 0);
         
         if (end_cost + cost < 30) {
             list_tuple_i64_push_back(route, next, end_cost + cost + 1);
-            
             list_i64_remove(unopened_valve_ids, i);
             
             dfs(num_valves, valves, route, unopened_valve_ids, movement_costs, best_score);
             
             list_i64_insert(unopened_valve_ids, i, next);
-            
-            int64_t ig1, ig2;
-            list_tuple_i64_pop_back(route, &ig1, &ig2);
+            list_tuple_i64_remove(route, list_tuple_i64_size(route) - 1);
         }
     }
 }
@@ -89,13 +85,13 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
     int64_t ideal_remaining = 0;
     int64_t end1_id, end1_cost, end2_id, end2_cost;
     
-    list_tuple_i64_peek_back(route1, &end1_id, &end1_cost);
-    list_tuple_i64_peek_back(route2, &end2_id, &end2_cost);
-    
     if (list_i64_size(unopened_valve_ids) == 0) {
         *best_score = max(calc_score2(num_valves, valves, route1, route2), *best_score);
         return;
     }
+    
+    list_tuple_i64_peek_back(route1, &end1_id, &end1_cost);
+    list_tuple_i64_peek_back(route2, &end2_id, &end2_cost);
     
     for (uint64_t i=0; i<list_i64_size(unopened_valve_ids); ++i) {
         int64_t gv_id = list_i64_get(unopened_valve_ids, i);
@@ -112,11 +108,10 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
         return;
     }
     
-    for (uint64_t i=0; i<list_i64_size(unopened_valve_ids); ++i) {
+    for (int64_t i=list_i64_size(unopened_valve_ids)-1; i>=0; --i) {
         int64_t next = list_i64_get(unopened_valve_ids, i);
         
         int64_t cost1 = movement_costs[movement_cost_key(num_valves, end1_id, next)] + end1_cost + 1;
-        int64_t cost2 = movement_costs[movement_cost_key(num_valves, end2_id, next)] + end2_cost + 1;
 
         if (cost1 < 26) {
             list_tuple_i64_push_back(route1, next, cost1);
@@ -127,17 +122,24 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
             list_i64_insert(unopened_valve_ids, i, next);
             list_tuple_i64_remove(route1, list_tuple_i64_size(route1) - 1);
         }
-        
-        // Extra condition checking list size > 1 - both routes start at the 'AA' node, it's useless to check an
-        // exact transposition. So exclude the case where we're looking at 'AA' only.
-        if (cost2 < 26 && !(list_tuple_i64_size(route2) == 1 && list_tuple_i64_size(route1) == 1)) {
-            list_tuple_i64_push_back(route2, next, cost2);
-            list_i64_remove(unopened_valve_ids, i);
-            
-            dfs2(num_valves, valves, route1, route2, unopened_valve_ids, movement_costs, best_score);
-            
-            list_i64_insert(unopened_valve_ids, i, next);
-            list_tuple_i64_remove(route2, list_tuple_i64_size(route2) - 1);
+    }
+    
+    // Extra condition checking list size > 1 - both routes start at the 'AA' node, it's useless to check an
+    // exact transposition. So exclude the case where we're looking at 'AA' only.
+    if (!(list_tuple_i64_size(route2) == 1 && list_tuple_i64_size(route1) == 1)) {
+        for (int64_t i=list_i64_size(unopened_valve_ids)-1; i>=0; --i) {
+            int64_t next = list_i64_get(unopened_valve_ids, i);
+            int64_t cost2 = movement_costs[movement_cost_key(num_valves, end2_id, next)] + end2_cost + 1;
+
+            if (cost2 < 26) {
+                list_tuple_i64_push_back(route2, next, cost2);
+                list_i64_remove(unopened_valve_ids, i);
+                
+                dfs2(num_valves, valves, route1, route2, unopened_valve_ids, movement_costs, best_score);
+                
+                list_i64_insert(unopened_valve_ids, i, next);
+                list_tuple_i64_remove(route2, list_tuple_i64_size(route2) - 1);
+            }
         }
     }
 }
@@ -231,7 +233,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     // These are the only valve IDs we will consider for 
     // next moves during the DFS.
-    list_i64* unopened_valve_ids = list_i64_init(data_size);
+    list_i64* unopened_valve_ids = list_i64_init(32);
     for (uint64_t i=0; i<data_size; ++i) {
         if (valves[i].rate > 0) {
             list_i64_push_back(unopened_valve_ids, valves[i].id);
