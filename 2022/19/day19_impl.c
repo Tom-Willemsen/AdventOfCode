@@ -24,8 +24,8 @@ static inline int64_t geo_sum_1_to(int64_t n) {
 
 
 static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resources, struct resource_counts* robots, struct robot_costs* robot_costs, int64_t* best_score) {
-    if (max_mins == mins) {
-        *best_score = max(*best_score, resources->geodes);
+    if (mins == max_mins - 1) {
+        *best_score = max(*best_score, resources->geodes + robots->geodes);
         return;
     }
     
@@ -37,7 +37,7 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
     
     int64_t ideal_remaining_clay = resources->clay 
         + robots->clay * remaining_mins 
-        + geo_sum_1_to(min(max(remaining_mins-1, 0), ideal_remaining_ore / robot_costs->clayrobot_orecost));
+        + geo_sum_1_to(min(max(remaining_mins-2, 0), ideal_remaining_ore / robot_costs->clayrobot_orecost));  // For clay robots, no point building after *second* last turn.
     
     int64_t ideal_remaining_obsidian = resources->obsidian 
         + robots->obsidian * remaining_mins 
@@ -51,22 +51,27 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
         return;
     }
     
+    int64_t max_ore_cost_any_robot = max(max(robot_costs->orerobot_orecost, robot_costs->clayrobot_orecost), 
+                             max(robot_costs->obsidianrobot_orecost, robot_costs->geoderobot_orecost));
+    
     uint8_t can_build_geode_robot = resources->ore >= robot_costs->geoderobot_orecost 
         && resources->obsidian >= robot_costs->geoderobot_obsidiancost;
     
     uint8_t can_build_obsidian_robot = resources->ore >= robot_costs->obsidianrobot_orecost
         && resources->clay >= robot_costs->obsidianrobot_claycost
-        && mins < max_mins - 1
-        && robots->obsidian < robot_costs->geoderobot_obsidiancost;
+        && mins < max_mins - 2  // obs can only be useful if we have at least one more turn afterwards to use it to form a geode robot.
+        && robots->obsidian < robot_costs->geoderobot_obsidiancost
+        && resources->obsidian + (robots->obsidian - robot_costs->geoderobot_obsidiancost) * remaining_mins < 0;
         
     uint8_t can_build_clay_robot = resources->ore >= robot_costs->clayrobot_orecost 
-        && mins < max_mins - 1
-        && robots->clay < robot_costs->obsidianrobot_claycost;
+        && mins < max_mins - 3  // clay can only be useful if we have at least *two* more turns afterwards to use it to form obs robot -> geode robot.
+        && robots->clay < robot_costs->obsidianrobot_claycost
+        && resources->clay + (robots->clay - robot_costs->obsidianrobot_claycost) * remaining_mins < 0;
     
     uint8_t can_build_ore_robot = resources->ore >= robot_costs->orerobot_orecost 
-        && mins < max_mins - 1
-        && robots->ore < max(max(robot_costs->orerobot_orecost, robot_costs->clayrobot_orecost), 
-                             max(robot_costs->obsidianrobot_orecost, robot_costs->geoderobot_orecost));
+        && mins < max_mins - 2  // ore can only be useful if we have at least one more turn afterwards to use it to form a geode robot.
+        && robots->ore < max_ore_cost_any_robot
+        && resources->ore + (robots->ore - max_ore_cost_any_robot) * remaining_mins < 0;
     
     resources->ore += robots->ore;
     resources->clay += robots->clay;
@@ -154,6 +159,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         robots.geodes = 0;
         
         dfs(24, 0, &resources, &robots, &robot_costs, &quality);
+        
         *part1 += id * quality;
         
         if (id <= 3) {
@@ -168,6 +174,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             robots.geodes = 0;
             
             dfs(32, 0, &resources, &robots, &robot_costs, &quality);
+            
             *part2 *= quality;
         }
     }
