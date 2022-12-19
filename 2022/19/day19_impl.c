@@ -51,10 +51,22 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
         return;
     }
     
-    uint8_t can_build_geode_robot = resources->ore >= robot_costs->geoderobot_orecost && resources->obsidian >= robot_costs->geoderobot_obsidiancost;
-    uint8_t can_build_obsidian_robot = resources->ore >= robot_costs->obsidianrobot_orecost && resources->clay >= robot_costs->obsidianrobot_claycost && mins < max_mins - 1;
-    uint8_t can_build_clay_robot = resources->ore >= robot_costs->clayrobot_orecost && mins < max_mins - 1;
-    uint8_t can_build_ore_robot = resources->ore >= robot_costs->orerobot_orecost && mins < max_mins - 1;
+    uint8_t can_build_geode_robot = resources->ore >= robot_costs->geoderobot_orecost 
+        && resources->obsidian >= robot_costs->geoderobot_obsidiancost;
+    
+    uint8_t can_build_obsidian_robot = resources->ore >= robot_costs->obsidianrobot_orecost
+        && resources->clay >= robot_costs->obsidianrobot_claycost
+        && mins < max_mins - 1
+        && robots->obsidian < robot_costs->geoderobot_obsidiancost;
+        
+    uint8_t can_build_clay_robot = resources->ore >= robot_costs->clayrobot_orecost 
+        && mins < max_mins - 1
+        && robots->clay < robot_costs->obsidianrobot_claycost;
+    
+    uint8_t can_build_ore_robot = resources->ore >= robot_costs->orerobot_orecost 
+        && mins < max_mins - 1
+        && robots->ore < max(max(robot_costs->orerobot_orecost, robot_costs->clayrobot_orecost), 
+                             max(robot_costs->obsidianrobot_orecost, robot_costs->geoderobot_orecost));
     
     resources->ore += robots->ore;
     resources->clay += robots->clay;
@@ -70,34 +82,33 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
         resources->ore += robot_costs->geoderobot_orecost;
         resources->obsidian += robot_costs->geoderobot_obsidiancost;
     } else {
-    
-    if (can_build_obsidian_robot) {
-        robots->obsidian++;
-        resources->ore -= robot_costs->obsidianrobot_orecost;
-        resources->clay -= robot_costs->obsidianrobot_claycost;
+        if (can_build_obsidian_robot) {
+            robots->obsidian++;
+            resources->ore -= robot_costs->obsidianrobot_orecost;
+            resources->clay -= robot_costs->obsidianrobot_claycost;
+            dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
+            robots->obsidian--;
+            resources->ore += robot_costs->obsidianrobot_orecost;
+            resources->clay += robot_costs->obsidianrobot_claycost;
+        }
+        
+        if (can_build_clay_robot) {
+            robots->clay++;
+            resources->ore -= robot_costs->clayrobot_orecost;
+            dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
+            robots->clay--;
+            resources->ore += robot_costs->clayrobot_orecost;
+        }
+        
+        if (can_build_ore_robot) {
+            robots->ore++;
+            resources->ore -= robot_costs->orerobot_orecost;
+            dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
+            robots->ore--;
+            resources->ore += robot_costs->orerobot_orecost;
+        }
+        
         dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
-        robots->obsidian--;
-        resources->ore += robot_costs->obsidianrobot_orecost;
-        resources->clay += robot_costs->obsidianrobot_claycost;
-    }
-    
-    if (can_build_clay_robot) {
-        robots->clay++;
-        resources->ore -= robot_costs->clayrobot_orecost;
-        dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
-        robots->clay--;
-        resources->ore += robot_costs->clayrobot_orecost;
-    }
-    
-    if (can_build_ore_robot) {
-        robots->ore++;
-        resources->ore -= robot_costs->orerobot_orecost;
-        dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
-        robots->ore--;
-        resources->ore += robot_costs->orerobot_orecost;
-    }
-    
-    dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
     }
     resources->ore -= robots->ore;
     resources->clay -= robots->clay;
