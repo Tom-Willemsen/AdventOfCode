@@ -69,7 +69,7 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
         robots->geodes--;
         resources->ore += robot_costs->geoderobot_orecost;
         resources->obsidian += robot_costs->geoderobot_obsidiancost;
-    }
+    } else {
     
     if (can_build_obsidian_robot) {
         robots->obsidian++;
@@ -98,7 +98,7 @@ static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resource
     }
     
     dfs(max_mins, mins+1, resources, robots, robot_costs, best_score);
-    
+    }
     resources->ore -= robots->ore;
     resources->clay -= robots->clay;
     resources->obsidian -= robots->obsidian;
@@ -111,7 +111,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = 0;
     *part2 = 1;
     
-    #pragma omp parallel for schedule(dynamic)
     for (uint64_t i=0; i<data_size; ++i) {
         int64_t id;
         int64_t quality = 0;
@@ -144,9 +143,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         robots.geodes = 0;
         
         dfs(24, 0, &resources, &robots, &robot_costs, &quality);
-        printf("p1 quality for %ld is %ld\n", id, quality);
-        
-        #pragma omp critical
         *part1 += id * quality;
         
         if (id <= 3) {
@@ -161,11 +157,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             robots.geodes = 0;
             
             dfs(32, 0, &resources, &robots, &robot_costs, &quality);
-            printf("p2 quality for %ld is %ld\n", id, quality);
-            
-            #pragma omp critical
             *part2 *= quality;
         }
     }
-    
 }
