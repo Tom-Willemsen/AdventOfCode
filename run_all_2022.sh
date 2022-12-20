@@ -14,6 +14,6 @@ do
         echo "2022 Day $i"
         ./build/2022/$i/2022_day$i 2022/$i/input
         echo ""
-        hyperfine $HYPERFINE_RUN_ARGS -N -u millisecond --style color "./build/2022/$i/2022_day$i 2022/$i/input"
+        hyperfine $HYPERFINE_RUN_ARGS -N -u millisecond --style basic "./build/2022/$i/2022_day$i 2022/$i/input"
     fi
 done;

@@ -54,6 +54,7 @@ check_ipo_supported()
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 include_directories("common")
+include_directories("external/libdivide")
 
 function(add_unit_test name source link)
     if (CMOCKA)

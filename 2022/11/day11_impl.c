@@ -6,10 +6,10 @@ typedef struct monkey {
     list_i64* items;
     int64_t number;
     int64_t op;
-    int64_t test;
-    double test_inverse;
     int64_t to_true;
     int64_t to_false;
+    int64_t test;
+    struct libdivide_s64_t fast_divisor;
 } monkey;
 
 static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part) 
@@ -23,7 +23,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
     
     int64_t rounds = (part == 2) ? 10000 : 20;
     
-    double divisor_inverse = 1.0 / ((double) divisor);
+    struct libdivide_s64_t fast_divisor = libdivide_s64_gen(divisor);
     
     for (int64_t round=0; round<rounds; ++round) {
         for (uint64_t m=0; m<n_monkeys; ++m) {
@@ -34,14 +34,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                 int64_t item = list_i64_get(monkeys[m].items, i);
                 
                 if (item >= (1ULL<<26)) {
-                    // Only do this modulo if item is starting to get too big.
-                    // This saves ~3ms over always doing it.
-                    // Need to start doing modulos after we pass 26-bits, as we use
-                    // doubles which have 52 bits of mantissa.
-                    //
-                    // Precomputing inv_divisor outside the loop and using the multiplicative-inverse
-                    // modulo algorithm saves a further ~1ms.
-                    item = i64_modulo_mulinv(item, divisor, divisor_inverse);
+                    item = item - libdivide_s64_do(item, &fast_divisor) * divisor;
                 }
                 
                 if (monkeys[m].op == '+') {
@@ -54,8 +47,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
                     item /= 3;
                 }
                 
-                // Using multiplicative-inverse here saves a *further* 2ms...
-                if (i64_modulo_mulinv(item, monkeys[m].test, monkeys[m].test_inverse) == 0) {
+                if (item - libdivide_s64_do(item, &monkeys[m].fast_divisor) * monkeys[m].test == 0) {
                     list_i64_push_back(monkeys[monkeys[m].to_true].items, item);
                 } else {
                     list_i64_push_back(monkeys[monkeys[m].to_false].items, item);
@@ -105,7 +97,7 @@ static void parse(char** data, uint64_t data_size, uint64_t n_monkeys, monkey* m
             int64_t t = strtol(data[i] + strlen("  Test: divisible by "), NULL, 10);
             assert(t > 0);
             monkeys[m].test = t;
-            monkeys[m].test_inverse = 1.0/((double) t);
+            monkeys[m].fast_divisor = libdivide_s64_gen(t);
         } else if (strncmp(data[i], "    If true: throw to monkey ", strlen("    If true: throw to monkey ")) == 0) {
             int64_t to_monkey = strtol(data[i] + strlen("    If true: throw to monkey "), NULL, 10);
             assert(to_monkey >= 0);
