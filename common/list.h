@@ -238,3 +238,21 @@ static void list_i64_inplace_slice(list_i64* list, int64_t start, int64_t end) {
     }
     return memcmp(list->array, other->array, list->size*sizeof(int64_t)) == 0;
 }
+
+static void list_i64_move_index(list_i64* list, uint64_t old_index, uint64_t new_index) {
+    assert(old_index < list->size && new_index < list->size);
+    if (old_index == new_index) {
+        return;
+    }
+    
+    int64_t tmp_old = list->array[old_index];
+    
+    // dest, src, size
+    if (old_index > new_index) {
+        memmove(list->array + new_index + 1, list->array + new_index, (old_index - new_index) * sizeof(int64_t));
+    } else {
+        memmove(list->array + old_index, list->array + old_index + 1, (new_index - old_index) * sizeof(int64_t));
+    }
+    
+    list->array[new_index] = tmp_old;
+}

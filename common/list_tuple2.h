@@ -73,6 +73,12 @@ static inline void list_tuple_i64_insert(list_tuple_i64* list, uint64_t index, i
     list_i64_insert(list->x, index, x);
 }
 
+static inline void list_tuple_i64_move_index(list_tuple_i64* list, uint64_t old_index, uint64_t new_index) {
+    assert(list->x->size == list->y->size);
+    list_i64_move_index(list->y, old_index, new_index);
+    list_i64_move_index(list->x, old_index, new_index);
+}
+
 static int64_t list_tuple_i64_last_indexof(list_tuple_i64* list, int64_t y, int64_t x) {
     for (int64_t i=list_tuple_i64_size(list) - 1; i>=0; --i) {
         if (list_i64_get(list->y, i) == x && list_i64_get(list->x, i) == y) {

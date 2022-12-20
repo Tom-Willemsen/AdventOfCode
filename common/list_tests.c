@@ -302,6 +302,46 @@ void test_list_equals (void ** state) {
     list_i64_free(list2);
 }
 
+void test_list_moveindex (void ** state) {
+    list_i64* list1 = list_i64_init(10);
+    
+    for (int64_t i=0; i<10; ++i) {
+        list_i64_push_back(list1, i);
+    }
+    
+    list_i64_move_index(list1, 0, 1);
+    assert_int_equal(list_i64_get(list1, 0), 1);
+    assert_int_equal(list_i64_get(list1, 1), 0);
+    assert_int_equal(list_i64_get(list1, 2), 2);
+    assert_int_equal(list_i64_get(list1, 3), 3);
+    assert_int_equal(list_i64_get(list1, 7), 7);
+    assert_int_equal(list_i64_get(list1, 8), 8);
+    assert_int_equal(list_i64_get(list1, 9), 9);
+    
+    list_i64_move_index(list1, 9, 8);
+    assert_int_equal(list_i64_get(list1, 0), 1);
+    assert_int_equal(list_i64_get(list1, 1), 0);
+    assert_int_equal(list_i64_get(list1, 2), 2);
+    assert_int_equal(list_i64_get(list1, 3), 3);
+    assert_int_equal(list_i64_get(list1, 7), 7);
+    assert_int_equal(list_i64_get(list1, 8), 9);
+    assert_int_equal(list_i64_get(list1, 9), 8);
+    
+    list_i64_move_index(list1, 2, 7);
+    assert_int_equal(list_i64_get(list1, 0), 1);
+    assert_int_equal(list_i64_get(list1, 1), 0);
+    assert_int_equal(list_i64_get(list1, 2), 3);
+    assert_int_equal(list_i64_get(list1, 3), 4);
+    assert_int_equal(list_i64_get(list1, 4), 5);
+    assert_int_equal(list_i64_get(list1, 5), 6);
+    assert_int_equal(list_i64_get(list1, 6), 7);
+    assert_int_equal(list_i64_get(list1, 7), 2);
+    assert_int_equal(list_i64_get(list1, 8), 9);
+    assert_int_equal(list_i64_get(list1, 9), 8);
+    
+    list_i64_free(list1);
+}
+
 int main (void)
 {
     const struct CMUnitTest tests [] =
@@ -319,6 +359,7 @@ int main (void)
         cmocka_unit_test (test_list_equals),
         cmocka_unit_test (test_list_copy),
         cmocka_unit_test (test_list_copy_slice),
+        cmocka_unit_test (test_list_moveindex),
     };
     int count_fail_tests =
         cmocka_run_group_tests (tests, NULL, NULL);
