@@ -38,9 +38,6 @@ static void shuffle(list_tuple_i64* data, uint64_t rounds) {
             int64_t new_index = i64modulo_positive(current_index + dist, list_tuple_i64_size(data) - 1);
             
             list_tuple_i64_move_index(data, current_index, new_index);
-            // list_tuple_i64_get(data, current_index, &index, &value);
-            // list_tuple_i64_remove(data, current_index);
-            // list_tuple_i64_insert(data, new_index, index, value);
         }
     }
 }
