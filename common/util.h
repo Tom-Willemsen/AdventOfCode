@@ -37,3 +37,7 @@
 [[nodiscard]] static inline int64_t i64_modulo_mulinv(int64_t x, int64_t y, double y_inverse) {
     return x - ((int64_t) (((double) x) * y_inverse)) * y;
 }
+
+[[nodiscard]] static inline int64_t i64modulo_positive(int64_t x, int64_t y) {
+    return (x % y + y) % y;
+}
