@@ -33,7 +33,7 @@ static int64_t simulate(uint64_t n_monkeys, monkey* monkeys, uint8_t part)
             for (uint64_t i=0; i<list_size; ++i) {
                 int64_t item = list_i64_get(monkeys[m].items, i);
                 
-                if (item >= (1ULL<<26)) {
+                if (item >= (1ULL<<31)) {
                     item = item - libdivide_s64_do(item, &fast_divisor) * divisor;
                 }
                 

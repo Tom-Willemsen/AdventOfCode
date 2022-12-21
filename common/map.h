@@ -92,6 +92,20 @@ static int64_t map_i64_get(map_i64* map, int64_t key, int64_t def) {
     return def;
 }
 
+static int64_t map_i64_contains_key(map_i64* map, int64_t key) {
+    int64_t k, v;
+    list_tuple_i64* bucket = map_i64_maybe_get_bucket(map, key);
+    if (bucket != NULL) {
+        for (uint64_t i=0; i<list_tuple_i64_size(bucket); ++i) {
+            list_tuple_i64_get(bucket, i, &k, &v);
+            if (k == key) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 typedef struct map_i64_iterator {
     map_i64* map;
     uint64_t bucket;
