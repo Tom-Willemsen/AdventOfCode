@@ -1,21 +1,71 @@
 #include "day19_impl.h"
 
 
-struct robot_costs {
-    int64_t orerobot_orecost;
-    int64_t clayrobot_orecost;
-    int64_t obsidianrobot_orecost;
-    int64_t obsidianrobot_claycost;
-    int64_t geoderobot_orecost;
-    int64_t geoderobot_obsidiancost;
-};
+static inline int64_t range_in_tablebase(FILE* tablebase, struct robot_costs* costs) {
+    rewind(tablebase);
+    
+    size_t tb_size;
+    int64_t sizes[12];
+    
+    fread(&tb_size, sizeof(size_t), 1, tablebase);
+    fread(sizes, sizeof(int64_t), 12, tablebase);
+    
+    if (costs->orerobot_orecost >= sizes[0] && costs->orerobot_orecost <= sizes[6]
+        && costs->clayrobot_orecost >= sizes[1] && costs->clayrobot_orecost <= sizes[7]
+        && costs->obsidianrobot_orecost >= sizes[2] && costs->obsidianrobot_orecost <= sizes[8]
+        && costs->obsidianrobot_claycost >= sizes[3] && costs->obsidianrobot_claycost <= sizes[9]
+        && costs->geoderobot_orecost >= sizes[4] && costs->geoderobot_orecost <= sizes[10]
+        && costs->geoderobot_orecost >= sizes[5] && costs->geoderobot_orecost <= sizes[11]
+    ) {
+        return 1;
+    }
+    return 0;
+}
 
-struct resource_counts {
-    int64_t ore;
-    int64_t clay;
-    int64_t obsidian;
-    int64_t geodes;
-};
+static inline int64_t tablebase_get(FILE* tablebase, struct robot_costs* costs) {
+    rewind(tablebase);
+    
+    size_t tb_size;
+    int64_t sizes[12];
+    
+    fread(&tb_size, sizeof(size_t), 1, tablebase);
+    fread(sizes, sizeof(int64_t), 12, tablebase);
+    
+    int64_t* tablebase_data = calloc(tb_size, sizeof(int64_t));
+    
+    fread(tablebase_data, sizeof(int64_t), tb_size, tablebase);
+    
+    size_t index = (costs->orerobot_orecost - sizes[0])
+        * (sizes[6] - sizes[1] + 1)
+        * (sizes[7] - sizes[2] + 1)
+        * (sizes[8] - sizes[3] + 1)
+        * (sizes[9] - sizes[4] + 1)
+        * (sizes[10] - sizes[5] + 1);
+        
+    index += (costs->clayrobot_orecost - sizes[1])
+        * (sizes[7] - sizes[2] + 1)
+        * (sizes[8] - sizes[3] + 1)
+        * (sizes[9] - sizes[4] + 1)
+        * (sizes[10] - sizes[5] + 1);
+        
+    index += (costs->obsidianrobot_orecost - sizes[2])
+        * (sizes[8] - sizes[3] + 1)
+        * (sizes[9] - sizes[4] + 1)
+        * (sizes[10] - sizes[5] + 1);
+        
+    index += (costs->obsidianrobot_claycost - sizes[3])
+        * (sizes[9] - sizes[4] + 1)
+        * (sizes[10] - sizes[5] + 1);
+        
+    index += (costs->geoderobot_orecost - sizes[4])
+        * (sizes[10] - sizes[5] + 1);
+        
+    index += (costs->geoderobot_obsidiancost - sizes[5]);
+    
+    int64_t result = tablebase_data[index];
+    free(tablebase_data);
+    return result;
+}
 
 
 static inline int64_t geo_sum_1_to(int64_t n) {
@@ -23,7 +73,7 @@ static inline int64_t geo_sum_1_to(int64_t n) {
 }
 
 
-static void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resources, struct resource_counts* robots, struct robot_costs* robot_costs, int64_t* best_score) {
+void dfs(int64_t max_mins, int64_t mins, struct resource_counts* resources, struct resource_counts* robots, struct robot_costs* robot_costs, int64_t* best_score) {
     if (mins == max_mins - 1) {
         *best_score = max(*best_score, resources->geodes + robots->geodes);
         return;
@@ -127,6 +177,9 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     *part1 = 0;
     *part2 = 1;
     
+    FILE* tablebase24 = fopen("tablebase24.bin", "r");
+    FILE* tablebase32 = fopen("tablebase32.bin", "r");
+    
     for (uint64_t i=0; i<data_size; ++i) {
         int64_t id;
         int64_t quality = 0;
@@ -158,7 +211,16 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         robots.obsidian = 0;
         robots.geodes = 0;
         
-        dfs(24, 0, &resources, &robots, &robot_costs, &quality);
+        if (tablebase24 != NULL) {
+            if (range_in_tablebase(tablebase24, &robot_costs)) {
+                quality = tablebase_get(tablebase24, &robot_costs);
+            } else {
+                printf("not using 24-move tablebase: not in tablebase range\n");
+            }
+        } else {
+            printf("not using 24-move tablebase: doesn't exist\n");
+            dfs(24, 0, &resources, &robots, &robot_costs, &quality);
+        }
         
         *part1 += id * quality;
         
@@ -177,5 +239,13 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             
             *part2 *= quality;
         }
+    }
+    
+    if (tablebase24 != NULL) {
+        fclose(tablebase24);
+    }
+    
+    if (tablebase32 != NULL) {
+        fclose(tablebase32);
     }
 }
