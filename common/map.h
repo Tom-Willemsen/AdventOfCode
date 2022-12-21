@@ -1,16 +1,19 @@
 #pragma once
 #include "list_tuple2.h"
 #include "util.h"
+#include "libdivide.h"
 
 typedef struct map_i64 {
     uint64_t n_buckets;
     list_tuple_i64** buckets;
+    struct libdivide_s64_t buckets_fast_divisor;
 } map_i64;
 
 static map_i64* map_i64_init(uint64_t n_buckets) {
     map_i64* map = calloc(1, sizeof(map_i64));
     assert(n_buckets > 0);
     map->n_buckets = n_buckets;
+    map->buckets_fast_divisor = libdivide_s64_gen(n_buckets);
     map->buckets = calloc(n_buckets, sizeof(list_tuple_i64*));
     
     for (uint64_t i=0; i<n_buckets; ++i) {
@@ -48,12 +51,12 @@ static uint64_t map_i64_size(map_i64* map) {
     return result;
 }
 
-static inline uint64_t map_i64_hashfunction(uint64_t n_buckets, int64_t key) {
-    return i64abs(key) % n_buckets;
+static inline uint64_t map_i64_hashfunction(map_i64* map, int64_t key) {
+    return key - libdivide_s64_do(key, &map->buckets_fast_divisor) * map->n_buckets;
 }
 
 static inline list_tuple_i64* map_i64_get_or_create_bucket(map_i64* map, int64_t key) {
-    uint64_t bucket = map_i64_hashfunction(map->n_buckets, key);
+    uint64_t bucket = map_i64_hashfunction(map, key);
     if (map->buckets[bucket] == NULL) {
         map->buckets[bucket] = list_tuple_i64_init(2);
     }
@@ -61,7 +64,7 @@ static inline list_tuple_i64* map_i64_get_or_create_bucket(map_i64* map, int64_t
 }
 
 static inline list_tuple_i64* map_i64_maybe_get_bucket(map_i64* map, int64_t key) {
-    uint64_t bucket = map_i64_hashfunction(map->n_buckets, key);
+    uint64_t bucket = map_i64_hashfunction(map, key);
     return map->buckets[bucket];
 }
 

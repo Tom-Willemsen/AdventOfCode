@@ -4,16 +4,19 @@
 #include <stdlib.h>
 #include "list_tuple3.h"
 #include "util.h"
+#include "libdivide.h"
 
 typedef struct set_tuple3_i64 {
     uint64_t n_buckets;
     list_tuple3_i64** buckets;
+    struct libdivide_s64_t buckets_fast_divisor;
 } set_tuple3_i64;
 
 static set_tuple3_i64* set_tuple3_i64_init (uint64_t n_buckets) {
     set_tuple3_i64* set = calloc(1, sizeof(set_tuple3_i64));
     assert(n_buckets > 0);
     set->n_buckets = n_buckets;
+    set->buckets_fast_divisor = libdivide_s64_gen(n_buckets);
     set->buckets = calloc(n_buckets, sizeof(list_tuple3_i64*));
     
     for (uint64_t i=0; i<n_buckets; ++i) {
@@ -32,12 +35,13 @@ static void set_tuple3_i64_free(set_tuple3_i64* set) {
     free(set);
 }
 
-static inline uint64_t set_tuple3_i64_hashfunction(uint64_t n_buckets, int64_t x, int64_t y, int64_t z) {
-    return i64abs(49157 * x + 193 * y + z) % n_buckets;
+static inline uint64_t set_tuple3_i64_hashfunction(set_tuple3_i64* set, int64_t x, int64_t y, int64_t z) {
+    int64_t key = i64abs(49157 * x + 193 * y + z);
+    return key - libdivide_s64_do(key, &set->buckets_fast_divisor) * set->n_buckets;
 }
 
 static inline list_tuple3_i64* set_tuple3_i64_get_or_create_bucket(set_tuple3_i64* set, int64_t x, int64_t y, int64_t z) {
-    uint64_t bucket = set_tuple3_i64_hashfunction(set->n_buckets, x, y, z);
+    uint64_t bucket = set_tuple3_i64_hashfunction(set, x, y, z);
     if (set->buckets[bucket] == NULL) {
         set->buckets[bucket] = list_tuple3_i64_init(1);
     }
@@ -45,7 +49,7 @@ static inline list_tuple3_i64* set_tuple3_i64_get_or_create_bucket(set_tuple3_i6
 }
 
 static inline list_tuple3_i64* set_tuple3_i64_maybe_get_bucket(set_tuple3_i64* set, int64_t x, int64_t y, int64_t z) {
-    uint64_t bucket = set_tuple3_i64_hashfunction(set->n_buckets, x, y, z);
+    uint64_t bucket = set_tuple3_i64_hashfunction(set, x, y, z);
     return set->buckets[bucket];
 }
 
