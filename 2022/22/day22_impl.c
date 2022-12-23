@@ -11,7 +11,12 @@ static void next_in_direction(list_tuple3_i64* teleport_sources, list_tuple3_i64
     x += X_DIRS[dir];
     y += Y_DIRS[dir];
     
-    int64_t teleport_index = list_tuple3_i64_last_indexof(teleport_sources, x, y, dir);
+    int64_t teleport_index = -1;
+    
+    // quick-n-dirty optimisation, we know the only portals are along these lines...
+    if (i64modulo_positive(x, 50) == 0 || i64modulo_positive(x, 50) == 49 || i64modulo_positive(y, 50) == 0 || i64modulo_positive(y, 50) == 49) {
+        teleport_index = list_tuple3_i64_last_indexof(teleport_sources, x, y, dir);
+    }
     
     if (teleport_index == -1) {
         // no teleport
