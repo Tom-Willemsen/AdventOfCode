@@ -73,11 +73,10 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
                     int64_t y3 = elf_y + MOVE_DIRS[dir_index][5];
                     
                     if (!set_tuple_i64_contains(elves, x1, y1)  && !set_tuple_i64_contains(elves, x2, y2) && !set_tuple_i64_contains(elves, x3, y3)) {
-                        if (set_tuple_i64_contains(proposals, x2, y2)) {
-                            set_tuple_i64_add(dup_proposals, x2, y2);
-                        } else {
-                            set_tuple_i64_add(proposals, x2, y2);
+                        if (set_tuple_i64_add(proposals, x2, y2)) {
                             list_tuple3_i64_push_back(movers, elf_x, elf_y, dir_index);
+                        } else {
+                            set_tuple_i64_add(dup_proposals, x2, y2);
                         }
                         break;
                     }
