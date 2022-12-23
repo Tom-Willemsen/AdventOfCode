@@ -23,7 +23,7 @@ static const int64_t MOVE_DIRS[4][6] = {
 
 void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) {
     
-    set_tuple_i64* elves = set_tuple_i64_init(4096);
+    set_tuple_i64* elves = set_tuple_i64_init(8192);
     list_tuple3_i64* movers = list_tuple3_i64_init(4096);
     set_tuple_i64* proposals = set_tuple_i64_init(256);
     set_tuple_i64* dup_proposals = set_tuple_i64_init(256);
