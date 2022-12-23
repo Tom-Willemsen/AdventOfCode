@@ -14,7 +14,7 @@ static const int64_t DIRS[8][2] = {
 
 
 static const int64_t MOVE_DIRS[4][6] = {
-    // (x, y), (x, y), (x, y)
+    // (x1, y1), (x2, y2), (x3, y3)
     {-1, -1, 0, -1, 1, -1},
     {-1, 1, 0, 1, 1, 1},
     {-1, 1, -1, 0, -1, -1},
@@ -25,7 +25,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     set_tuple_i64* elves = set_tuple_i64_init(4096);
     list_tuple3_i64* movers = list_tuple3_i64_init(4096);
-    list_tuple_i64* proposals = list_tuple_i64_init(4096);
+    set_tuple_i64* proposals = set_tuple_i64_init(256);
+    set_tuple_i64* dup_proposals = set_tuple_i64_init(256);
     
     for (uint64_t y=0; y<data_size; ++y) {
         uint64_t x_max = strlen(data[y]) - 1;
@@ -41,7 +42,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     while (1) {
         int64_t elf_x, elf_y, dir;
         
-        list_tuple_i64_clear(proposals);
+        set_tuple_i64_clear(proposals);
+        set_tuple_i64_clear(dup_proposals);
         list_tuple3_i64_clear(movers);
         
         set_tuple_i64_iterator* iter = set_tuple_i64_iter(elves);
@@ -59,15 +61,24 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             
             if (needs_move) {
                 for (int64_t j=rounds; j<rounds+4; ++j) {
-                    int64_t dir_index = i64modulo_positive(j, 4);
-                    if (
-                        !set_tuple_i64_contains(elves, elf_x + MOVE_DIRS[dir_index][0], elf_y + MOVE_DIRS[dir_index][1])
-                        && !set_tuple_i64_contains(elves, elf_x + MOVE_DIRS[dir_index][2], elf_y + MOVE_DIRS[dir_index][3])
-                        && !set_tuple_i64_contains(elves, elf_x + MOVE_DIRS[dir_index][4], elf_y + MOVE_DIRS[dir_index][5])
-                    ) 
-                    {
-                        list_tuple_i64_push_back(proposals, elf_x + MOVE_DIRS[dir_index][2], elf_y + MOVE_DIRS[dir_index][3]);
-                        list_tuple3_i64_push_back(movers, elf_x, elf_y, dir_index);
+                    int64_t dir_index = j % 4;
+                    
+                    int64_t x1 = elf_x + MOVE_DIRS[dir_index][0];
+                    int64_t y1 = elf_y + MOVE_DIRS[dir_index][1];
+                    
+                    int64_t x2 = elf_x + MOVE_DIRS[dir_index][2];
+                    int64_t y2 = elf_y + MOVE_DIRS[dir_index][3];
+                    
+                    int64_t x3 = elf_x + MOVE_DIRS[dir_index][4];
+                    int64_t y3 = elf_y + MOVE_DIRS[dir_index][5];
+                    
+                    if (!set_tuple_i64_contains(elves, x1, y1)  && !set_tuple_i64_contains(elves, x2, y2) && !set_tuple_i64_contains(elves, x3, y3)) {
+                        if (set_tuple_i64_contains(proposals, x2, y2)) {
+                            set_tuple_i64_add(dup_proposals, x2, y2);
+                        } else {
+                            set_tuple_i64_add(proposals, x2, y2);
+                            list_tuple3_i64_push_back(movers, elf_x, elf_y, dir_index);
+                        }
                         break;
                     }
                 }
@@ -83,7 +94,7 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
             int64_t new_x = elf_x + MOVE_DIRS[dir][2];
             int64_t new_y = elf_y + MOVE_DIRS[dir][3];
             
-            if (list_tuple_i64_count(proposals, new_x, new_y) == 1) {
+            if (!set_tuple_i64_contains(dup_proposals, new_x, new_y)) {
                 set_tuple_i64_remove(elves, elf_x, elf_y);
                 set_tuple_i64_add(elves, new_x, new_y);
                 any_moved = 1;
@@ -95,8 +106,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
         }
         
         rounds++;
-        
-        printf("round %ld\n", rounds);
         
         if (rounds == 10) {
             int64_t min_x = INT64_MAX, min_y = INT64_MAX, max_x = INT64_MIN, max_y = INT64_MIN;
@@ -114,7 +123,8 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     
     *part2 = rounds + 1;
     
-    list_tuple_i64_free(proposals);
+    set_tuple_i64_free(dup_proposals);
+    set_tuple_i64_free(proposals);
     list_tuple3_i64_free(movers);
     set_tuple_i64_free(elves);
 }
