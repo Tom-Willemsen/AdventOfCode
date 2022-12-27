@@ -50,8 +50,10 @@ static void generate_tablebase(int64_t moves, struct robot_costs* min_costs, str
         abort();
     }
     
+    uint64_t done = 0;
+    
     // :)
-    #pragma omp parallel for collapse(6) schedule(dynamic)
+    #pragma omp parallel for collapse(6) schedule(dynamic) num_threads(14)
     for (int64_t orerobot_orecost=min_costs->orerobot_orecost; orerobot_orecost<=max_costs->orerobot_orecost; ++orerobot_orecost) {
         
         for (int64_t clayrobot_orecost=min_costs->clayrobot_orecost; clayrobot_orecost<=max_costs->clayrobot_orecost; ++clayrobot_orecost) {
@@ -88,8 +90,14 @@ static void generate_tablebase(int64_t moves, struct robot_costs* min_costs, str
                             
                             dfs(moves, 0, &resources, &robots, &costs, &quality);
                             
-                            tablebase[tablebase_index(min_costs, max_costs, &costs)] = quality;
-                            
+                            #pragma omp critical
+                            {
+                                tablebase[tablebase_index(min_costs, max_costs, &costs)] = quality;
+                                done++;
+                                if (done % 100 == 0) {
+                                    printf("Done %lu of %lu\n", done, tablebase_size);
+                                }
+                            }
                         }
                         
                     }
@@ -99,26 +107,35 @@ static void generate_tablebase(int64_t moves, struct robot_costs* min_costs, str
             }
             
         }
-        
     }
     
-    fwrite(&tablebase_size, sizeof(size_t), 1, file);
+    fprintf(file, "#pragma once\n");
+    fprintf(file, "\n");
+    fprintf(file, "static const uint64_t tablebase%lu_size = %lu;\n", moves, tablebase_size);
+    fprintf(file, "\n");
     
-    fwrite(&min_costs->orerobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&min_costs->clayrobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&min_costs->obsidianrobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&min_costs->obsidianrobot_claycost, sizeof(int64_t), 1, file);
-    fwrite(&min_costs->geoderobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&min_costs->geoderobot_orecost, sizeof(int64_t), 1, file);
+    fprintf(file, "static const uint64_t tablebase%lu_orerobot_orecost_min = %lu;\n", moves, min_costs->orerobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_clayrobot_orecost_min = %lu;\n", moves, min_costs->clayrobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_obsidianrobot_orecost_min = %lu;\n", moves, min_costs->obsidianrobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_obsidianrobot_claycost_min = %lu;\n", moves, min_costs->obsidianrobot_claycost);
+    fprintf(file, "static const uint64_t tablebase%lu_geoderobot_orecost_min = %lu;\n", moves, min_costs->geoderobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_geoderobot_obsidiancost_min = %lu;\n", moves, min_costs->geoderobot_obsidiancost);
+    fprintf(file, "\n");
     
-    fwrite(&max_costs->orerobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&max_costs->clayrobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&max_costs->obsidianrobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&max_costs->obsidianrobot_claycost, sizeof(int64_t), 1, file);
-    fwrite(&max_costs->geoderobot_orecost, sizeof(int64_t), 1, file);
-    fwrite(&max_costs->geoderobot_orecost, sizeof(int64_t), 1, file);
+    fprintf(file, "static const uint64_t tablebase%lu_orerobot_orecost_max = %lu;\n", moves, max_costs->orerobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_clayrobot_orecost_max = %lu;\n", moves, max_costs->clayrobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_obsidianrobot_orecost_max = %lu;\n", moves, max_costs->obsidianrobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_obsidianrobot_claycost_max = %lu;\n", moves, max_costs->obsidianrobot_claycost);
+    fprintf(file, "static const uint64_t tablebase%lu_geoderobot_orecost_max = %lu;\n", moves, max_costs->geoderobot_orecost);
+    fprintf(file, "static const uint64_t tablebase%lu_geoderobot_obsidiancost_max = %lu;\n", moves, max_costs->geoderobot_obsidiancost);
+    fprintf(file, "\n");
     
-    fwrite(tablebase, sizeof(int64_t), tablebase_size, file);
+    fprintf(file, "static const uint64_t tablebase%lu[%lu] = {\n", moves, tablebase_size);
+    
+    for (uint64_t i=0; i<tablebase_size; ++i) {
+        fprintf(file, "    %ld,\n", tablebase[i]);
+    }
+    fprintf(file, "};\n");
     
 }
 
@@ -141,7 +158,7 @@ int main(int argc, char** argv) {
     max_costs.geoderobot_orecost=4;
     max_costs.geoderobot_obsidiancost=20;
     
-    FILE* tablebase24 = fopen("tablebase24.bin", "wb");
+    FILE* tablebase24 = fopen("tablebase24.h", "w");
     
     printf("Generating 24-move tablebase...\n");
     generate_tablebase(24, &min_costs, &max_costs, tablebase24);
@@ -149,7 +166,7 @@ int main(int argc, char** argv) {
     
     fclose(tablebase24);
     
-    FILE* tablebase32 = fopen("tablebase32.bin", "wb");
+    FILE* tablebase32 = fopen("tablebase32.h", "w");
     
     printf("Generating 32-move tablebase...\n");
     generate_tablebase(32, &min_costs, &max_costs, tablebase32);
