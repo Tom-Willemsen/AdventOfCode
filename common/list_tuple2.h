@@ -81,7 +81,7 @@ static inline void list_tuple_i64_move_index(list_tuple_i64* list, uint64_t old_
 
 static int64_t list_tuple_i64_last_indexof(list_tuple_i64* list, int64_t y, int64_t x) {
     for (int64_t i=list_tuple_i64_size(list) - 1; i>=0; --i) {
-        if (list_i64_get(list->y, i) == x && list_i64_get(list->x, i) == y) {
+        if (list_i64_get(list->x, i) == x && list_i64_get(list->y, i) == y) {
             return i;
         }
     }
@@ -95,4 +95,15 @@ static int64_t list_tuple_i64_contains(list_tuple_i64* list, int64_t y, int64_t 
         }
     }
     return 0;
+}
+
+static uint64_t list_tuple_i64_count(list_tuple_i64* list, int64_t y, int64_t x) {
+    uint64_t result = 0;
+    for (uint64_t i=0; i<list_tuple_i64_size(list); ++i) {
+        if (list_i64_get(list->x, i) == x && list_i64_get(list->y, i) == y) {
+            result++;
+        }
+    }
+    return result;
 } 
+

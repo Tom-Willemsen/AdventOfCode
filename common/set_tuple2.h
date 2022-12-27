@@ -53,6 +53,14 @@ static inline list_tuple_i64* set_tuple_i64_maybe_get_bucket(set_tuple_i64* set,
     return set->buckets[bucket];
 }
 
+static void set_tuple_i64_clear(set_tuple_i64* set) {
+    for (uint64_t i=0; i<set->n_buckets; ++i) {
+        if (set->buckets[i] != NULL) {
+            list_tuple_i64_clear(set->buckets[i]);
+        }
+    }
+}
+
 static int64_t set_tuple_i64_add(set_tuple_i64* set, int64_t x, int64_t y) {
     list_tuple_i64* bucket = set_tuple_i64_get_or_create_bucket(set, x, y);
     if (!list_tuple_i64_contains(bucket, x, y)) {

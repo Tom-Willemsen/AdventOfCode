@@ -196,14 +196,7 @@ void test_day_16_ex (void ** state) {
     int64_t part2 = 0;
     calculate(example_data, 10, &part1, &part2);
     assert_int_equal(part1, 1651);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 1707);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 void test_day_16_linear (void ** state) {
@@ -211,14 +204,7 @@ void test_day_16_linear (void ** state) {
     int64_t part2 = 0;
     calculate(testdata_linear, 16, &part1, &part2);
     assert_int_equal(part1, 2640);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 2670);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 void test_day_16_quadratic (void ** state) {
@@ -226,14 +212,7 @@ void test_day_16_quadratic (void ** state) {
     int64_t part2 = 0;
     calculate(testdata_quadratic, 16, &part1, &part2);
     assert_int_equal(part1, 13468);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 12887);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 void test_day_16_circle (void ** state) {
@@ -241,14 +220,7 @@ void test_day_16_circle (void ** state) {
     int64_t part2 = 0;
     calculate(testdata_circle, 16, &part1, &part2);
     assert_int_equal(part1, 1288);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 1484);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 void test_day_16_clusters (void ** state) {
@@ -256,14 +228,7 @@ void test_day_16_clusters (void ** state) {
     int64_t part2 = 0;
     calculate(testdata_clusters, 43, &part1, &part2);
     assert_int_equal(part1, 2400);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 3680);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 void test_day_16_real (void ** state) {
@@ -271,14 +236,7 @@ void test_day_16_real (void ** state) {
     int64_t part2 = 0;
     calculate(real_data, 66, &part1, &part2);
     assert_int_equal(part1, 1673);
-    
-    #ifndef DISABLE_2022_16_P2
     assert_int_equal(part2, 2343);
-    #endif
-    
-    #ifdef DISABLE_2022_16_P2
-    assert_int_equal(part2, 0);
-    #endif
 }
 
 int main (void)
