@@ -262,7 +262,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     dfs(data_size, valves, route, unopened_valve_ids, movement_costs, part1);
     list_tuple_i64_free(route);
     
-    #ifndef DISABLE_2022_16_P2
     // part 2
     list_tuple_i64* route1 = list_tuple_i64_init(32);
     list_tuple_i64* route2 = list_tuple_i64_init(32);
@@ -271,7 +270,6 @@ void calculate(char** data, uint64_t data_size, int64_t* part1, int64_t* part2) 
     dfs2(data_size, valves, route1, route2, unopened_valve_ids, movement_costs, part2);
     list_tuple_i64_free(route1);
     list_tuple_i64_free(route2);
-    #endif
     
     for (uint64_t i=0; i<data_size; ++i) {
         list_tuple_i64_free(valves[i].connections_by_name);

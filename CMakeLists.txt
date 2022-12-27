@@ -44,11 +44,6 @@ if(ASAN)
 endif(ASAN)
 
 
-if(DISABLE_2022_16_P2)
-  add_compile_definitions(DISABLE_2022_16_P2)
-endif(DISABLE_2022_16_P2)
-
-
 include(CheckIPOSupported)
 check_ipo_supported()
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
