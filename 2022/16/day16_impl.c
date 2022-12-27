@@ -108,25 +108,40 @@ static void dfs2(uint64_t num_valves, valve* valves, list_tuple_i64* route1, lis
         return;
     }
     
+    int64_t route1_can_move = 0, route2_can_move = 0;
     for (int64_t i=list_i64_size(unopened_valve_ids)-1; i>=0; --i) {
         int64_t next = list_i64_get(unopened_valve_ids, i);
         
         int64_t cost1 = movement_costs[movement_cost_key(num_valves, end1_id, next)] + end1_cost + 1;
-
+        int64_t cost2 = movement_costs[movement_cost_key(num_valves, end2_id, next)] + end2_cost + 1;
+        
         if (cost1 < 26) {
-            list_tuple_i64_push_back(route1, next, cost1);
-            list_i64_remove(unopened_valve_ids, i);
-            
-            dfs2(num_valves, valves, route1, route2, unopened_valve_ids, movement_costs, best_score);
-            
-            list_i64_insert(unopened_valve_ids, i, next);
-            list_tuple_i64_remove(route1, list_tuple_i64_size(route1) - 1);
+            route1_can_move = 1;
+        }
+        if (cost2 < 26) {
+            route2_can_move = 1;
         }
     }
     
-    // Extra condition checking list size > 1 - both routes start at the 'AA' node, it's useless to check an
-    // exact transposition. So exclude the case where we're looking at 'AA' only.
-    if (!(list_tuple_i64_size(route2) == 1 && list_tuple_i64_size(route1) == 1)) {
+    if (route1_can_move && (list_tuple_i64_size(route1) <= list_tuple_i64_size(route2) || !route2_can_move)) {
+        for (int64_t i=list_i64_size(unopened_valve_ids)-1; i>=0; --i) {
+            int64_t next = list_i64_get(unopened_valve_ids, i);
+            
+            int64_t cost1 = movement_costs[movement_cost_key(num_valves, end1_id, next)] + end1_cost + 1;
+
+            if (cost1 < 26) {
+                list_tuple_i64_push_back(route1, next, cost1);
+                list_i64_remove(unopened_valve_ids, i);
+                
+                dfs2(num_valves, valves, route1, route2, unopened_valve_ids, movement_costs, best_score);
+                
+                list_i64_insert(unopened_valve_ids, i, next);
+                list_tuple_i64_remove(route1, list_tuple_i64_size(route1) - 1);
+            }
+        }
+    }
+    
+    if (route2_can_move && (list_tuple_i64_size(route2) < list_tuple_i64_size(route1) || !route1_can_move)) {
         for (int64_t i=list_i64_size(unopened_valve_ids)-1; i>=0; --i) {
             int64_t next = list_i64_get(unopened_valve_ids, i);
             int64_t cost2 = movement_costs[movement_cost_key(num_valves, end2_id, next)] + end2_cost + 1;
